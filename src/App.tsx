@@ -16,7 +16,7 @@ interface Product {
 const BACKEND_ENDPOINT = 'https://script.google.com/macros/s/YOUR_GOOGLE_APPS_SCRIPT_ID/exec';
 
 // --- PIXEL META CONFIGURATION ---
-const META_PIXEL_ID = 'YOUR_META_PIXEL_ID'; // À remplacer par votre ID Pixel
+const META_PIXEL_ID = '22222'; // À remplacer par votre ID Pixel
 
 // --- CTA VARIATIONS ---
 const ctaVariations = {
