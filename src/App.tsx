@@ -17,7 +17,7 @@ const BACKEND_ENDPOINT = 'https://script.google.com/macros/s/YOUR_GOOGLE_APPS_SC
 
 // --- PIXEL META CONFIGURATION ---
 const META_PIXEL_ID = '22222'; // À remplacer par votre ID Pixel
-<meta name="facebook-domain-verification" content="y2brmh9srpk41qyjcv0lki81hhuqda" />
+
 // --- CTA VARIATIONS ---
 const ctaVariations = {
   ar: [
