@@ -1,5 +1,25 @@
 import React, { useState, useEffect } from 'react';
 
+const MetaVerification = () => {
+  useEffect(() => {
+    // Créer et ajouter la balise meta de vérification
+    const metaTag = document.createElement('meta');
+    metaTag.name = 'facebook-domain-verification';
+    metaTag.content = 'y2brmh9srpk41qyjcv0lki81hhuqda';
+    document.head.appendChild(metaTag);
+    
+    return () => {
+      // Nettoyer en cas de démontage du composant
+      const existingMeta = document.querySelector('meta[name="facebook-domain-verification"]');
+      if (existingMeta) {
+        existingMeta.remove();
+      }
+    };
+  }, []);
+  
+  return null;
+};
+
 // --- TYPES ---
 type Language = 'ar' | 'fr';
 
