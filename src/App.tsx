@@ -15,6 +15,9 @@ interface Product {
 // --- CONFIGURATION BACKEND ---
 const BACKEND_ENDPOINT = 'https://script.google.com/macros/s/YOUR_GOOGLE_APPS_SCRIPT_ID/exec';
 
+// --- PIXEL META CONFIGURATION ---
+const META_PIXEL_ID = 'YOUR_META_PIXEL_ID'; // À remplacer par votre ID Pixel
+
 // --- CTA VARIATIONS ---
 const ctaVariations = {
   ar: [
@@ -148,6 +151,81 @@ const getStoredTrackingData = () => {
   return { sessionId, whatsappNumber, fbclid };
 };
 
+// --- META PIXEL HELPER FUNCTIONS ---
+const initMetaPixel = () => {
+  // Initialisation du pixel Meta
+  if (!META_PIXEL_ID || META_PIXEL_ID === 'YOUR_META_PIXEL_ID') {
+    console.warn('⚠️ Meta Pixel ID non configuré');
+    return;
+  }
+
+  // Script du pixel Meta
+  const script = document.createElement('script');
+  script.innerHTML = `
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '${META_PIXEL_ID}');
+    fbq('track', 'PageView');
+  `;
+  document.head.appendChild(script);
+};
+
+// Fonctions pour tracker les événements Meta
+const trackMetaEvent = (eventName: string, parameters = {}) => {
+  if (typeof window !== 'undefined' && (window as any).fbq) {
+    (window as any).fbq('track', eventName, parameters);
+    console.log(`📊 Meta Event: ${eventName}`, parameters);
+  } else {
+    console.log(`📊 Meta Event (simulé): ${eventName}`, parameters);
+  }
+};
+
+// Événements spécifiques
+const trackPageView = () => {
+  trackMetaEvent('PageView', {
+    content_name: 'DECOREL Landing Page',
+    content_category: 'Furniture',
+    currency: 'MAD',
+    value: 0
+  });
+};
+
+const trackViewContent = (productName: string, productPrice: number) => {
+  trackMetaEvent('ViewContent', {
+    content_name: productName,
+    content_type: 'product',
+    currency: 'MAD',
+    value: productPrice
+  });
+};
+
+const trackContact = (productName: string, productPrice: number, method = 'whatsapp') => {
+  trackMetaEvent('Contact', {
+    content_name: productName,
+    content_type: 'product',
+    currency: 'MAD',
+    value: productPrice,
+    contact_method: method
+  });
+};
+
+const trackPurchase = (productName: string, productPrice: number, transactionId: string) => {
+  trackMetaEvent('Purchase', {
+    content_name: productName,
+    content_type: 'product',
+    currency: 'MAD',
+    value: productPrice,
+    transaction_id: transactionId,
+    num_items: 1
+  });
+};
+
 // --- TRACKING SERVICE ---
 const trackClickToWhatsApp = async (data: {
   fbclid: string;
@@ -161,16 +239,18 @@ const trackClickToWhatsApp = async (data: {
   timestamp: number;
 }) => {
   try {
+    // 1. Tracking Meta - Événement Contact
+    trackContact(data.productName, data.productPrice, 'whatsapp');
+
     const payload = {
       event_type: 'whatsapp_click',
       ...data,
-      // L'adresse IP sera capturée côté backend depuis la requête HTTP
     };
 
-    // Envoi asynchrone au backend (pas de blocage de l'UI)
+    // Envoi asynchrone au backend
     fetch(BACKEND_ENDPOINT, {
       method: 'POST',
-      mode: 'no-cors', // Important pour Google Apps Script
+      mode: 'no-cors',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -341,6 +421,16 @@ const ProductCard = ({
     return () => clearInterval(interval);
   }, [product.images.length]);
 
+  // Track ViewContent quand le produit est visible
+  useEffect(() => {
+    // Délai pour s'assurer que l'utilisateur a vu le produit
+    const timer = setTimeout(() => {
+      trackViewContent(product.name[language], product.price);
+    }, 2000);
+    
+    return () => clearTimeout(timer);
+  }, [product.id, language]);
+
   const handleWhatsAppClick = () => {
     // 1. Tracking du clic WhatsApp
     trackClickToWhatsApp({
@@ -355,7 +445,7 @@ const ProductCard = ({
       timestamp: Date.now(),
     });
 
-    // 2. Construction du message WhatsApp SANS données de tracking dans l'URL
+    // 2. Construction du message WhatsApp
     const message = language === 'ar'
       ? `السلام عليكم، أريد معلومات عن ${product.name.ar}`
       : `Bonjour, je veux des informations sur ${product.name.fr}`;
@@ -511,6 +601,47 @@ const Footer = ({ language }: { language: Language }) => (
   </footer>
 );
 
+// --- COMPOSANT: META PIXEL INITIALIZATION ---
+const MetaPixel = () => {
+  useEffect(() => {
+    // Initialiser le pixel Meta
+    initMetaPixel();
+    
+    // Track PageView
+    trackPageView();
+    
+    // Track ViewContent pour la page globale
+    trackViewContent('DECOREL Landing Page', 0);
+    
+    console.log('✅ Meta Pixel initialisé');
+    
+    // Fonction pour simuler un achat (pour test seulement - à enlever en prod)
+    const simulatePurchaseForTesting = () => {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🧪 Test Purchase Event disponible - Appuyez sur P');
+        const handleKeyPress = (e: KeyboardEvent) => {
+          if (e.key === 'p' || e.key === 'P') {
+            const randomProduct = productsData[Math.floor(Math.random() * productsData.length)];
+            trackPurchase(
+              randomProduct.name.fr,
+              randomProduct.price,
+              `TEST_${Date.now()}`
+            );
+            alert('✅ Purchase Event simulé pour test');
+          }
+        };
+        window.addEventListener('keypress', handleKeyPress);
+        return () => window.removeEventListener('keypress', handleKeyPress);
+      }
+    };
+    
+    simulatePurchaseForTesting();
+    
+  }, []);
+  
+  return null;
+};
+
 // --- APP PRINCIPALE ---
 function App() {
   const [language, setLanguage] = useState<Language>('ar');
@@ -605,6 +736,20 @@ function App() {
         }
       `}</style>
 
+      {/* META PIXEL */}
+      <MetaPixel />
+      
+      {/* NOSCRIPT PIXEL FALLBACK */}
+      <noscript>
+        <img 
+          height="1" 
+          width="1" 
+          style={{ display: 'none' }}
+          src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
+          alt=""
+        />
+      </noscript>
+
       {/* HEADER */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-lg shadow-sm border-b border-gray-300">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-center relative">
@@ -693,6 +838,10 @@ function App() {
           <div>Session: {trackingData.sessionId.substring(0, 10)}...</div>
           <div>WhatsApp: {trackingData.whatsappNumber}</div>
           <div>FBCLID: {trackingData.fbclid ? trackingData.fbclid.substring(0, 8) + '...' : 'none'}</div>
+          <div className="mt-2 text-green-400">✅ Pixel Meta: Activé</div>
+          <div className="text-[10px] text-gray-400 mt-1">
+            Appuyez sur 'P' pour simuler un achat
+          </div>
         </div>
       )}
     </div>
