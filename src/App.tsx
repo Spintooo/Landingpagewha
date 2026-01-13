@@ -62,7 +62,7 @@ const colors = {
 };
 
 // --- NUMÉROS WHATSAPP ---
-const whatsappNumbers = ['212658015287', '212713411065'];
+const whatsappNumbers = ['212658015287', '212626541514'];
 
 // --- PRODUITS ---
 const productsData: Product[] = [
