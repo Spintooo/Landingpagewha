@@ -9,7 +9,7 @@ interface Product {
   price: number;
   images: string[];
   stock: number;
-  soldCount: number;
+  // soldCount removed from interface requirement as we don't display it anymore
 }
 
 // --- CONFIGURATION BACKEND ---
@@ -53,6 +53,28 @@ const ctaVariations = {
   ]
 };
 
+// --- BADGE VARIATIONS (NOUVEAU) ---
+const badgeVariations = {
+  ar: [
+    'عرض جد محدود',
+    'هذا المنتج الاكثر مبيعا!',
+    'هذا المنتج جد مطلوب!',
+    'موديل جديد !',
+    'موديل عصري وانيق!',
+    'كمية جد محدودة!',
+    'تخفيض 50%'
+  ],
+  fr: [
+    'Offre très limitée',
+    'Best-seller !',
+    'Très demandé !',
+    'Nouveau modèle !',
+    'Modèle moderne !',
+    'Quantité très limitée !',
+    '-50% de réduction'
+  ]
+};
+
 // --- COULEURS ---
 const colors = {
   ar: [
@@ -72,21 +94,8 @@ const colors = {
 // --- NUMÉROS WHATSAPP ---
 const whatsappNumbers = ['212656454375'];
 
-// --- PRODUITS ---
+// --- PRODUITS (ORDRE MODIFIÉ: YAKOUT -> FATY -> QUEEN) ---
 const productsData: Product[] = [
-  {
-    id: 1,
-    name: { ar: 'كــوافوز AYA', fr: 'COIFFEUSE AYA' },
-    price: 649,
-    images: [
-      'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/hlHsBOO56LXuTEgbEh8E8ScoUdm1BStF2Dc1f9og_lg.png',
-      'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/9ZWT8UNNjIvg6k860BSHGwT4hw9NLhMRovu5bmcX_lg.png',
-      'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/CrikpIn64uKs1ms3rR2dEudxy3fp0vq2oOlWgrND_lg.png',
-      'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/CISZl1cyRVAsjbXQruBVxXNCfGECwbLWDdlSTOBi_lg.png'
-    ],
-    stock: Math.floor(Math.random() * 4) + 3,
-    soldCount: Math.floor(Math.random() * 501) + 400
-  },
   {
     id: 2,
     name: { ar: 'كوافوز YAKOUT', fr: 'COIFFEUSE YAKOUT' },
@@ -97,21 +106,7 @@ const productsData: Product[] = [
       'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/1n3ZoZ5ISwib9Dt9inRh9DlDuXrUbAKwAYGie7wB_lg.png',
       'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/FxN8UJU6PiV0AfqfIktbHZYvj31lI3tvcvAG7TUA_lg.png'
     ],
-    stock: Math.floor(Math.random() * 4) + 3,
-    soldCount: Math.floor(Math.random() * 501) + 400
-  },
-  {
-    id: 3,
-    name: { ar: 'كوافوز QUEEN', fr: 'COIFFEUSE QUEEN' },
-    price: 649,
-    images: [
-      'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/IknqY41xp51Tyirk3Vy8V07mo9jXXEXnHvSnSJ3i_lg.png',
-      'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/z80nFUx58TBZJ1AKXwWuO38wUioYXmYpm1tTSp1E_lg.png',
-      'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/8IBLfvyEO1LwGjziHDRz3rqvaxQZKUlMcUWmw09P_lg.png',
-      'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/DWo7H90jQMNFufRfWouRAhvUbM5URh4BtpJayswy_lg.png'
-    ],
-    stock: Math.floor(Math.random() * 4) + 3,
-    soldCount: Math.floor(Math.random() * 501) + 400
+    stock: Math.floor(Math.random() * 4) + 3
   },
   {
     id: 4,
@@ -123,8 +118,19 @@ const productsData: Product[] = [
       'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/inpwoZy2vAMKjV59cnOz7GNbpvFx95FUo5CU5Q6U.webp',
       'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/DKXKXJNL5h0oodhh1xvzym3EHFcXjjew2AxUwQFl.webp'
     ],
-    stock: Math.floor(Math.random() * 4) + 3,
-    soldCount: Math.floor(Math.random() * 501) + 400
+    stock: Math.floor(Math.random() * 4) + 3
+  },
+  {
+    id: 3,
+    name: { ar: 'كوافوز QUEEN', fr: 'COIFFEUSE QUEEN' },
+    price: 649,
+    images: [
+      'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/IknqY41xp51Tyirk3Vy8V07mo9jXXEXnHvSnSJ3i_lg.png',
+      'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/z80nFUx58TBZJ1AKXwWuO38wUioYXmYpm1tTSp1E_lg.png',
+      'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/8IBLfvyEO1LwGjziHDRz3rqvaxQZKUlMcUWmw09P_lg.png',
+      'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/DWo7H90jQMNFufRfWouRAhvUbM5URh4BtpJayswy_lg.png'
+    ],
+    stock: Math.floor(Math.random() * 4) + 3
   }
 ];
 
@@ -385,82 +391,61 @@ const ScrollToTop = () => {
   );
 };
 
+// --- FEATURES HERO REFONDU (REFONT À ZERO) ---
 const FeaturesHero = ({ language }: { language: Language }) => (
-  <div className="relative max-w-5xl mx-auto px-3 py-4">
-    <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-2xl overflow-hidden shadow-2xl border border-gray-700">
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-green-500/20 to-transparent rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-gray-600/20 to-transparent rounded-full blur-3xl" style={{ animation: 'float 6s ease-in-out infinite' }} />
+  <div className="max-w-6xl mx-auto px-4 py-8 mb-4">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">
+          {language === 'ar' ? 'لماذا تختار DECOREL؟' : 'Pourquoi choisir DECOREL ?'}
+        </h2>
+        <div className="h-1 w-24 mx-auto bg-green-500 rounded-full"></div>
       </div>
-
-      <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: `radial-gradient(circle at 25px 25px, white 2%, transparent 0%), radial-gradient(circle at 75px 75px, white 2%, transparent 0%)`,
-        backgroundSize: '100px 100px'
-      }} />
-
-      <div className="relative z-10 p-5">
-        <div className="text-center mb-4">
-          <h2 className="text-white text-2xl font-black mb-1 tracking-tight" style={{ 
-            textShadow: '0 2px 15px rgba(0,0,0,0.5)',
-            lineHeight: 1.2,
-            background: 'linear-gradient(to right, #ffffff, #e5e7eb)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
-          }}>
-            {language === 'ar' ? 'لماذا تختار DECOREL؟' : 'Pourquoi DECOREL ?'}
-          </h2>
-          <div className="h-1 w-20 mx-auto bg-gradient-to-r from-green-500 to-emerald-400 rounded-full" />
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Card 1: Paiement */}
+        <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-green-200 transition-colors">
+          <div className="w-14 h-14 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4 text-2xl shadow-sm">
+            🤝
+          </div>
+          <h3 className="text-lg font-bold text-gray-800 mb-2">
+            {language === 'ar' ? 'الدفع عند الاستلام' : 'Paiement à la livraison'}
+          </h3>
+          <p className="text-sm text-gray-600">
+            {language === 'ar' 
+              ? 'تخلص حتى توصلك الطلبية ديالك و تقلبها مزيان' 
+              : 'Payez uniquement à la réception et vérification du produit'}
+          </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-4 max-w-2xl mx-auto">
-          <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm rounded-xl p-4 text-center border border-gray-700 hover:border-green-500/50 transition-all duration-300 hover:transform hover:-translate-y-1">
-            <div className="w-12 h-12 mx-auto mb-2 bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-full flex items-center justify-center border border-green-500/30">
-              <span className="text-2xl text-green-400">✓</span>
-            </div>
-            <p className="text-white text-sm font-bold leading-tight mb-1">
-              {language === 'ar' ? 'الدفع عند الاستلام' : 'Paiement sécurisé'}
-            </p>
-            <p className="text-gray-300 text-xs leading-tight">
-              {language === 'ar' ? 'قلب بعد التأكد' : 'Payez en toute sécurité'}
-            </p>
-            <span className="inline-block bg-gradient-to-r from-green-600 to-emerald-600 text-white text-[10px] font-bold px-3 py-1 rounded-full mt-2">
-              {language === 'ar' ? '100% مضمون' : '100% Garanti'}
-            </span>
+        {/* Card 2: Qualité */}
+        <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-blue-200 transition-colors">
+          <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4 text-2xl shadow-sm">
+            💎
           </div>
-
-          <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm rounded-xl p-4 text-center border border-gray-700 hover:border-blue-500/50 transition-all duration-300 hover:transform hover:-translate-y-1">
-            <div className="w-12 h-12 mx-auto mb-2 bg-gradient-to-br from-blue-500/20 to-cyan-600/20 rounded-full flex items-center justify-center border border-blue-500/30">
-              <span className="text-2xl text-blue-400">⚡</span>
-            </div>
-            <p className="text-white text-sm font-bold leading-tight mb-1">
-              {language === 'ar' ? 'تركيب في 5 دقائق' : 'Installation rapide'}
-            </p>
-            <p className="text-gray-300 text-xs leading-tight">
-              {language === 'ar' ? 'بدون مجهود' : 'Sans difficulté'}
-            </p>
-            <span className="inline-block bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-[10px] font-bold px-3 py-1 rounded-full mt-2">
-              {language === 'ar' ? 'سهل جداً' : 'Très simple'}
-            </span>
-          </div>
+          <h3 className="text-lg font-bold text-gray-800 mb-2">
+            {language === 'ar' ? 'جودة عالية مضمونة' : 'Qualité Premium'}
+          </h3>
+          <p className="text-sm text-gray-600">
+            {language === 'ar' 
+              ? 'تصميمات عصرية و خشب متين يدوم طويلاً' 
+              : 'Designs modernes et matériaux durables de haute qualité'}
+          </p>
         </div>
 
-        <div className="bg-gradient-to-r from-gray-800/60 to-gray-900/60 backdrop-blur-sm rounded-xl p-3 text-center border border-gray-700">
-          <p className="text-white font-black text-sm leading-tight mb-1">
-            {language === 'ar' ? 'إختر موديلك المفضل' : 'Choisissez votre modèle'}
-          </p>
-          <p className="text-green-300 text-xs font-semibold leading-tight">
-            {language === 'ar' ? 'ألوان وأشكال متعددة' : 'Plusieurs couleurs disponibles'}
-          </p>
-          <div className="mt-2 flex justify-center">
-            <svg 
-              className="w-6 h-6 text-green-400" 
-              style={{ animation: 'bounceDown 1.5s ease-in-out infinite' }}
-              fill="currentColor" 
-              viewBox="0 0 20 20"
-            >
-              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v10.586l3.293-3.293a1 1 0 111.414 1.414l-5 5a1 1 0 01-1.414 0l-5-5a1 1 0 111.414-1.414L9 14.586V4a1 1 0 011-1z" clipRule="evenodd" />
-            </svg>
+        {/* Card 3: Rapidité */}
+        <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-yellow-200 transition-colors">
+          <div className="w-14 h-14 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mb-4 text-2xl shadow-sm">
+            🚀
           </div>
+          <h3 className="text-lg font-bold text-gray-800 mb-2">
+            {language === 'ar' ? 'توصيل سريع' : 'Livraison Rapide'}
+          </h3>
+          <p className="text-sm text-gray-600">
+            {language === 'ar' 
+              ? 'توصيل لباب الدار في وقت قياسي لجميع المدن' 
+              : 'Livraison à domicile rapide partout au Maroc'}
+          </p>
         </div>
       </div>
     </div>
@@ -483,6 +468,15 @@ const ProductCard = ({
   };
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [badgeText, setBadgeText] = useState('');
+
+  // Initialisation du badge aléatoire au montage
+  useEffect(() => {
+    const badges = badgeVariations[language];
+    // On utilise l'ID produit pour avoir un "aléatoire stable" ou juste random pur
+    const randomIdx = Math.floor(Math.random() * badges.length);
+    setBadgeText(badges[randomIdx]);
+  }, [language]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -548,8 +542,9 @@ const ProductCard = ({
           ))}
         </div>
 
+        {/* NOUVEAU BADGE AVEC TEXTE VARIABLE */}
         <div className="absolute top-3 right-3 bg-gradient-to-r from-red-600 to-red-700 text-white px-3 py-1.5 rounded-lg font-bold text-xs shadow-lg animate-pulse border border-red-800">
-          {language === 'ar' ? `⚡ ${product.stock} قطع متبقية` : `⚡ ${product.stock} restants`}
+          ⚡ {badgeText}
         </div>
       </div>
 
@@ -581,14 +576,12 @@ const ProductCard = ({
           </div>
         </div>
 
-        <div className="text-center mb-3">
+        <div className="text-center mb-6">
           <p className="text-4xl font-extrabold text-gray-900 leading-none">
             {product.price}
             <span className="text-xl ml-1 text-gray-600">{language === 'ar' ? 'درهم' : 'DH'}</span>
           </p>
-          <p className="text-red-600 text-xs font-bold mt-1">
-            {language === 'ar' ? `فقط ${product.stock} قطع متبقية` : `Seulement ${product.stock} restants`}
-          </p>
+          {/* SUPPRIMÉ: Texte "Seulement X pièces restantes" sous le prix */}
         </div>
 
         <button
@@ -615,13 +608,7 @@ const ProductCard = ({
           </svg>
         </button>
 
-        <div className="mt-3 text-center">
-          <p className="text-xs text-gray-600 font-semibold">
-            {language === 'ar' 
-              ? `+${product.soldCount.toLocaleString()} عميل إشترى هذا الموديل` 
-              : `+${product.soldCount.toLocaleString()} clients ont acheté ce modèle`}
-          </p>
-        </div>
+        {/* SUPPRIMÉ: Texte "+492 clients ont acheté ce modèle" */}
       </div>
     </div>
   );
@@ -675,7 +662,7 @@ const PixelInitializer = () => {
     if (process.env.NODE_ENV === 'development') {
       const handleKeyPress = (e: KeyboardEvent) => {
         if (e.key === 'p' || e.key === 'P') {
-          const randomProduct = productsData[Math.floor(Math.random() * productsData.length)];
+          const randomProduct = productsData[0]; // Just take first one for test
           const transactionId = `TEST_${Date.now()}`;
           trackMetaPurchase(randomProduct.name.fr, randomProduct.price, transactionId);
           trackTikTokPurchase(randomProduct.name.fr, randomProduct.price, `product_${randomProduct.id}`, transactionId);
@@ -694,7 +681,7 @@ const PixelInitializer = () => {
 function App() {
   const [language, setLanguage] = useState<Language>('ar');
   const [selectedCta, setSelectedCta] = useState('');
-  const [shuffledProducts, setShuffledProducts] = useState<Product[]>([]);
+  // SUPPRIMÉ: State 'shuffledProducts' pour respecter l'ordre strict
   const [trackingData, setTrackingData] = useState({
     sessionId: '',
     whatsappNumber: '',
@@ -724,9 +711,6 @@ function App() {
       whatsappNumber,
       fbclid: fbclid || storedData.fbclid || ''
     });
-
-    const shuffled = [...productsData].sort(() => Math.random() - 0.5);
-    setShuffledProducts(shuffled);
 
     const randomCtaIndex = Math.floor(Math.random() * ctaVariations.ar.length);
     setSelectedCta(ctaVariations.ar[randomCtaIndex]);
@@ -800,7 +784,8 @@ function App() {
 
       <main className="max-w-6xl mx-auto px-4 pb-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {shuffledProducts.map((product) => (
+          {/* Utilisation directe de productsData pour garder l'ordre strict */}
+          {productsData.map((product) => (
             <ProductCard
               key={product.id}
               product={product}
@@ -815,39 +800,7 @@ function App() {
       <Footer language={language} />
       <ScrollToTop />
 
-      <div className="fixed bottom-4 left-4 md:hidden z-50">
-        <button
-          onClick={() => {
-            const randomProduct = shuffledProducts[Math.floor(Math.random() * shuffledProducts.length)];
-            
-            trackClickToWhatsApp({
-              fbclid: trackingData.fbclid,
-              sessionId: trackingData.sessionId,
-              productName: randomProduct.name[language],
-              productId: `product_${randomProduct.id}`,
-              productPrice: randomProduct.price,
-              currency: 'MAD',
-              language: language,
-              whatsappNumber: trackingData.whatsappNumber,
-              userAgent: navigator.userAgent,
-              timestamp: Date.now(),
-            });
-
-            const message = language === 'ar'
-              ? `السلام عليكم، أريد معلومات عن ${randomProduct.name.ar}`
-              : `Bonjour, je veux des informations sur ${randomProduct.name.fr}`;
-            
-            const url = `https://wa.me/${trackingData.whatsappNumber}?text=${encodeURIComponent(message)}`;
-            window.open(url, '_blank', 'noopener,noreferrer');
-          }}
-          className="bg-[#25D366] text-white p-3.5 rounded-full shadow-2xl hover:shadow-3xl transition-all"
-          aria-label={language === 'ar' ? 'واتساب' : 'WhatsApp'}
-        >
-          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-          </svg>
-        </button>
-      </div>
+      {/* SUPPRIMÉ: Bouton Flottant WhatsApp */}
 
       {process.env.NODE_ENV === 'development' && (
         <div className="fixed top-20 right-4 bg-black/90 text-white text-xs p-3 rounded-lg z-50 max-w-xs">
