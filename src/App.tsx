@@ -442,74 +442,6 @@ const SmartHeader = ({ language, onLanguageChange }: { language: Language; onLan
 
 const FeaturesHero = ({ language }: { language: Language }) => (
   <div className="relative max-w-6xl mx-auto px-3 py-8">
-    {/* Titre principal avec style pro */}
-    <div className="text-center mb-8">
-      <div className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white px-8 py-4 rounded-2xl shadow-2xl mb-2 border border-gray-700">
-        <svg className="w-7 h-7 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-        </svg>
-        <h2 className="text-2xl md:text-3xl font-black tracking-tight">
-          {language === 'ar' ? 'لماذا تختار DECOREL؟' : 'Pourquoi DECOREL ?'}
-        </h2>
-        <svg className="w-7 h-7 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-        </svg>
-      </div>
-      <p className="text-gray-600 font-semibold text-sm">
-        {language === 'ar' ? 'جودة عالية • أسعار تنافسية • خدمة ممتازة' : 'Qualité Premium • Prix Compétitifs • Service Excellent'}
-      </p>
-    </div>
-
-    {/* Grille des avantages - 2 colonnes même sur mobile */}
-    <div className="grid grid-cols-2 gap-4 mb-6 max-w-4xl mx-auto">
-      
-      {/* Avantage 1 */}
-      <div className="group relative bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-5 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105 overflow-hidden">
-        {/* Effet brillant */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/20 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        
-        <div className="relative z-10 flex flex-col items-center text-center">
-          <div className="w-14 h-14 md:w-16 md:h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg border-2 border-white/30">
-            <svg className="w-7 h-7 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <h3 className="text-base md:text-lg font-black text-white mb-2 leading-tight">
-            {language === 'ar' ? 'الدفع عند الاستلام' : 'Paiement à la livraison'}
-          </h3>
-          <p className="text-xs md:text-sm text-white/90 leading-relaxed font-semibold">
-            {language === 'ar' ? 'قلب بعد التأكد' : 'Payez après vérification'}
-          </p>
-          <div className="mt-3 inline-block bg-white text-emerald-600 text-[10px] md:text-xs font-black px-3 py-1.5 rounded-full shadow-lg">
-            {language === 'ar' ? '✓ 100% مضمون' : '✓ 100% Garanti'}
-          </div>
-        </div>
-      </div>
-
-      {/* Avantage 2 */}
-      <div className="group relative bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl p-5 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105 overflow-hidden">
-        {/* Effet brillant */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/20 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        
-        <div className="relative z-10 flex flex-col items-center text-center">
-          <div className="w-14 h-14 md:w-16 md:h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg border-2 border-white/30">
-            <svg className="w-7 h-7 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          </div>
-          <h3 className="text-base md:text-lg font-black text-white mb-2 leading-tight">
-            {language === 'ar' ? 'تركيب سهل وسريع' : 'Installation rapide'}
-          </h3>
-          <p className="text-xs md:text-sm text-white/90 leading-relaxed font-semibold">
-            {language === 'ar' ? 'تركيب في 5 دقائق' : 'Montage en 5 minutes'}
-          </p>
-          <div className="mt-3 inline-block bg-white text-blue-600 text-[10px] md:text-xs font-black px-3 py-1.5 rounded-full shadow-lg">
-            {language === 'ar' ? '⚡ بدون مجهود' : '⚡ Sans effort'}
-          </div>
-        </div>
-      </div>
-    </div>
-
     {/* Call to action - Design radical court et percutant */}
     <div className="relative group max-w-2xl mx-auto">
       <div className="relative bg-gradient-to-r from-red-600 via-orange-600 to-yellow-500 rounded-2xl shadow-2xl overflow-hidden transform hover:scale-105 transition-all duration-300">
@@ -747,9 +679,6 @@ const ProductCard = ({
             {product.price}
             <span className="text-xl ml-1 text-gray-600">{language === 'ar' ? 'درهم' : 'DH'}</span>
           </p>
-          <div className="mt-2 inline-block bg-yellow-100 border-2 border-yellow-400 text-yellow-800 px-3 py-1 rounded-lg text-xs font-black animate-pulse">
-            {language === 'ar' ? '🔥 السعر شامل التوصيل' : '🔥 Livraison incluse'}
-          </div>
         </div>
 
         {/* Bouton WhatsApp avec animations attractives */}
@@ -782,16 +711,6 @@ const ProductCard = ({
             </svg>
           </div>
         </button>
-
-        {/* Indicateur de confiance */}
-        <div className="mt-3 flex items-center justify-center gap-2 text-green-600">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-          </svg>
-          <span className="text-xs font-bold">
-            {language === 'ar' ? 'طلبك محمي 100%' : 'Commande 100% sécurisée'}
-          </span>
-        </div>
       </div>
     </div>
   );
