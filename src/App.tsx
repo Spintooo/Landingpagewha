@@ -387,92 +387,192 @@ const ScrollToTop = () => {
   );
 };
 
+const SmartHeader = ({ language, onLanguageChange }: { language: Language; onLanguageChange: () => void }) => {
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [scrollTimeout, setScrollTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.pageYOffset;
+
+      // Cacher le header en scrollant vers le bas
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false);
+        
+        // Annuler le timeout précédent
+        if (scrollTimeout) {
+          clearTimeout(scrollTimeout);
+        }
+      } 
+      // Afficher le header après 2 secondes de scroll vers le haut
+      else if (currentScrollY < lastScrollY) {
+        if (scrollTimeout) {
+          clearTimeout(scrollTimeout);
+        }
+        
+        const timeout = setTimeout(() => {
+          setIsVisible(true);
+        }, 2000); // 2 secondes
+        
+        setScrollTimeout(timeout);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+      }
+    };
+  }, [lastScrollY, scrollTimeout]);
+
+  return (
+    <header 
+      className={`fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg shadow-sm border-b border-gray-300 transition-transform duration-500 ${
+        isVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}
+    >
+      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-center relative">
+        <img 
+          src="https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/others/wjGs4dLMgdmpRz5mH5cuoQtNQSI9ii22LWfVkDuA.png"
+          alt="DECOREL"
+          className="h-10 w-auto"
+        />
+        
+        <button
+          onClick={onLanguageChange}
+          className={`absolute ${language === 'ar' ? 'left-4' : 'right-4'} flex items-center gap-2 bg-gray-800 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg transition-all hover:bg-gray-900 active:scale-95`}
+        >
+          {language === 'ar' ? <><span>FR</span> 🇫🇷</> : <><span>AR</span> 🇲🇦</>}
+        </button>
+      </div>
+    </header>
+  );
+};
+
 const FeaturesHero = ({ language }: { language: Language }) => (
-  <div className="relative max-w-5xl mx-auto px-4 py-6">
-    <div className="bg-gradient-to-br from-emerald-50 via-white to-teal-50 rounded-3xl shadow-2xl border-2 border-emerald-200 overflow-hidden">
+  <div className="relative max-w-6xl mx-auto px-3 py-8">
+    {/* Titre principal avec style pro */}
+    <div className="text-center mb-8">
+      <div className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white px-8 py-4 rounded-2xl shadow-2xl mb-2 border border-gray-700">
+        <svg className="w-7 h-7 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        </svg>
+        <h2 className="text-2xl md:text-3xl font-black tracking-tight">
+          {language === 'ar' ? 'لماذا تختار DECOREL؟' : 'Pourquoi DECOREL ?'}
+        </h2>
+        <svg className="w-7 h-7 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        </svg>
+      </div>
+      <p className="text-gray-600 font-semibold text-sm">
+        {language === 'ar' ? 'جودة عالية • أسعار تنافسية • خدمة ممتازة' : 'Qualité Premium • Prix Compétitifs • Service Excellent'}
+      </p>
+    </div>
+
+    {/* Grille des avantages - 2 colonnes même sur mobile */}
+    <div className="grid grid-cols-2 gap-4 mb-6 max-w-4xl mx-auto">
       
-      {/* Motif décoratif */}
-      <div className="absolute inset-0 opacity-[0.03]">
-        <div className="absolute top-0 left-0 w-full h-full" style={{
-          backgroundImage: `radial-gradient(circle at 20px 20px, #10b981 1px, transparent 1px)`,
-          backgroundSize: '40px 40px'
-        }} />
+      {/* Avantage 1 */}
+      <div className="group relative bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-5 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105 overflow-hidden">
+        {/* Effet brillant */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/20 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        
+        <div className="relative z-10 flex flex-col items-center text-center">
+          <div className="w-14 h-14 md:w-16 md:h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg border-2 border-white/30">
+            <svg className="w-7 h-7 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 className="text-base md:text-lg font-black text-white mb-2 leading-tight">
+            {language === 'ar' ? 'الدفع عند الاستلام' : 'Paiement à la livraison'}
+          </h3>
+          <p className="text-xs md:text-sm text-white/90 leading-relaxed font-semibold">
+            {language === 'ar' ? 'قلب بعد التأكد' : 'Payez après vérification'}
+          </p>
+          <div className="mt-3 inline-block bg-white text-emerald-600 text-[10px] md:text-xs font-black px-3 py-1.5 rounded-full shadow-lg">
+            {language === 'ar' ? '✓ 100% مضمون' : '✓ 100% Garanti'}
+          </div>
+        </div>
       </div>
 
-      <div className="relative z-10 p-6">
+      {/* Avantage 2 */}
+      <div className="group relative bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl p-5 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105 overflow-hidden">
+        {/* Effet brillant */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/20 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
-        {/* Titre principal */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-2xl shadow-lg mb-4">
-            <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        <div className="relative z-10 flex flex-col items-center text-center">
+          <div className="w-14 h-14 md:w-16 md:h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg border-2 border-white/30">
+            <svg className="w-7 h-7 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            <h2 className="text-2xl font-black tracking-tight">
-              {language === 'ar' ? 'لماذا تختار DECOREL؟' : 'Pourquoi DECOREL ?'}
-            </h2>
           </div>
-        </div>
-
-        {/* Grille des avantages - 2 colonnes */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5 max-w-3xl mx-auto">
-          
-          {/* Avantage 1 */}
-          <div className="group bg-white rounded-2xl p-5 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-2 border-emerald-100 hover:border-emerald-400">
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-gray-800 mb-2">
-                {language === 'ar' ? 'الدفع عند الاستلام' : 'Paiement à la livraison'}
-              </h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                {language === 'ar' ? 'قلب بعد التأكد من المنتج' : 'Payez après vérification'}
-              </p>
-              <div className="mt-3 inline-block bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full">
-                {language === 'ar' ? '100% مضمون' : '100% Sécurisé'}
-              </div>
-            </div>
-          </div>
-
-          {/* Avantage 2 */}
-          <div className="group bg-white rounded-2xl p-5 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-2 border-blue-100 hover:border-blue-400">
-            <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-gray-800 mb-2">
-                {language === 'ar' ? 'تركيب سهل وسريع' : 'Installation facile'}
-              </h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                {language === 'ar' ? 'تركيب في 5 دقائق فقط' : 'Montage en 5 minutes'}
-              </p>
-              <div className="mt-3 inline-block bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-full">
-                {language === 'ar' ? 'بدون مجهود' : 'Sans effort'}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Call to action */}
-        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-4 text-center shadow-lg">
-          <p className="text-white font-bold text-lg mb-2">
-            {language === 'ar' ? '🎁 اختر موديلك المفضل الآن' : '🎁 Choisissez votre modèle maintenant'}
+          <h3 className="text-base md:text-lg font-black text-white mb-2 leading-tight">
+            {language === 'ar' ? 'تركيب سهل وسريع' : 'Installation rapide'}
+          </h3>
+          <p className="text-xs md:text-sm text-white/90 leading-relaxed font-semibold">
+            {language === 'ar' ? 'تركيب في 5 دقائق' : 'Montage en 5 minutes'}
           </p>
-          <div className="flex justify-center">
-            <svg 
-              className="w-8 h-8 text-white animate-bounce" 
-              fill="currentColor" 
-              viewBox="0 0 20 20"
-            >
-              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v10.586l3.293-3.293a1 1 0 111.414 1.414l-5 5a1 1 0 01-1.414 0l-5-5a1 1 0 111.414-1.414L9 14.586V4a1 1 0 011-1z" clipRule="evenodd" />
-            </svg>
+          <div className="mt-3 inline-block bg-white text-blue-600 text-[10px] md:text-xs font-black px-3 py-1.5 rounded-full shadow-lg">
+            {language === 'ar' ? '⚡ بدون مجهود' : '⚡ Sans effort'}
           </div>
         </div>
+      </div>
+    </div>
 
+    {/* Call to action avec style pro et animations */}
+    <div className="relative group max-w-2xl mx-auto">
+      {/* Effet de glow animé */}
+      <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 rounded-3xl blur-lg opacity-75 group-hover:opacity-100 animate-pulse" />
+      
+      <div className="relative bg-gradient-to-r from-orange-500 via-red-500 to-pink-600 rounded-3xl p-6 shadow-2xl overflow-hidden">
+        {/* Pattern décoratif */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
+            backgroundSize: '30px 30px'
+          }} />
+        </div>
+
+        {/* Étoiles décoratives animées */}
+        <div className="absolute top-2 left-4 text-yellow-300 text-2xl animate-pulse">✨</div>
+        <div className="absolute top-4 right-6 text-yellow-300 text-xl animate-pulse" style={{ animationDelay: '0.5s' }}>⭐</div>
+        <div className="absolute bottom-3 left-8 text-yellow-300 text-lg animate-pulse" style={{ animationDelay: '1s' }}>💫</div>
+        
+        <div className="relative z-10 text-center">
+          <div className="inline-flex items-center justify-center gap-3 mb-3">
+            <span className="text-4xl animate-bounce">🎁</span>
+            <h3 className="text-white font-black text-xl md:text-2xl leading-tight">
+              {language === 'ar' ? 'اختر موديلك المفضل الآن' : 'Choisissez votre modèle maintenant'}
+            </h3>
+            <span className="text-4xl animate-bounce" style={{ animationDelay: '0.3s' }}>🎁</span>
+          </div>
+          
+          <p className="text-white/95 font-bold text-sm md:text-base mb-4">
+            {language === 'ar' ? 'عرض حصري لفترة محدودة جداً!' : 'Offre exclusive pour une durée très limitée!'}
+          </p>
+
+          {/* Flèche animée */}
+          <div className="flex justify-center">
+            <div className="relative">
+              <svg 
+                className="w-10 h-10 text-white drop-shadow-lg" 
+                style={{ animation: 'bounceDown 1.5s ease-in-out infinite' }}
+                fill="currentColor" 
+                viewBox="0 0 20 20"
+              >
+                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v10.586l3.293-3.293a1 1 0 111.414 1.414l-5 5a1 1 0 01-1.414 0l-5-5a1 1 0 111.414-1.414L9 14.586V4a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+              {/* Cercle pulsant derrière la flèche */}
+              <div className="absolute inset-0 bg-white/30 rounded-full animate-ping" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -536,20 +636,37 @@ const ProductCard = ({
   return (
     <div 
       onClick={handleWhatsAppClick}
-      className="bg-white rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-300 cursor-pointer"
+      className="relative bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-[1.02] border-2 border-gray-200 hover:border-green-400 cursor-pointer group"
     >
+      {/* Effet de glow au hover */}
+      <div className="absolute inset-0 bg-gradient-to-r from-green-400/0 via-green-400/10 to-green-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      
+      {/* Badge "Cliquez ici" qui pulse */}
+      <div className="absolute top-4 left-4 z-20 bg-green-500 text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg animate-pulse">
+        {language === 'ar' ? '👈 إضغط هنا' : '👆 Cliquez ici'}
+      </div>
+
       <div className="relative w-full h-[340px] bg-gray-100 overflow-hidden">
         {product.images.map((img, idx) => (
           <img
             key={idx}
             src={img}
             alt={product.name[language]}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-110 ${
               idx === currentImageIndex ? 'opacity-100' : 'opacity-0'
             }`}
             loading={idx === 0 ? 'eager' : 'lazy'}
           />
         ))}
+        
+        {/* Overlay au hover avec icône WhatsApp */}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+          <div className="transform scale-0 group-hover:scale-100 transition-transform duration-300 bg-[#25D366] rounded-full p-4 shadow-2xl">
+            <svg className="w-12 h-12 text-white animate-pulse" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+          </div>
+        </div>
         
         <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
           {product.images.map((_, idx) => (
@@ -563,31 +680,34 @@ const ProductCard = ({
         </div>
 
         {/* Badge promotionnel dynamique */}
-        <div className="absolute top-3 right-3 bg-gradient-to-r from-red-600 to-red-700 text-white px-3 py-1.5 rounded-lg font-bold text-xs shadow-lg animate-pulse border border-red-800">
-          ⚡ {product.badge}
+        <div className="absolute top-3 right-3 bg-gradient-to-r from-red-600 to-red-700 text-white px-3 py-2 rounded-xl font-black text-xs shadow-2xl animate-pulse border-2 border-red-800">
+          <div className="flex items-center gap-1">
+            <span className="text-yellow-300">⚡</span>
+            <span>{product.badge}</span>
+          </div>
         </div>
       </div>
 
-      <div className="p-4">
-        <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">
+      <div className="relative p-4">
+        <h3 className="text-xl font-bold text-gray-900 mb-3 text-center group-hover:text-green-600 transition-colors">
           {product.name[language]}
         </h3>
 
-        <div className="mb-3">
+        <div className="mb-4">
           <p className="text-xs font-semibold text-gray-600 mb-2 text-center">
             {language === 'ar' ? 'الالوان المتوفرة' : 'Couleurs disponibles'}
           </p>
           <div className="flex justify-center gap-3">
             {colors[language].map((color, idx) => (
-              <div key={idx} className="group relative">
+              <div key={idx} className="group/color relative">
                 <div 
-                  className="w-8 h-8 rounded-full border-2 border-gray-300 shadow-sm hover:scale-110 transition-transform cursor-pointer"
+                  className="w-8 h-8 rounded-full border-2 border-gray-300 shadow-md hover:scale-125 transition-transform cursor-pointer hover:border-green-500 hover:shadow-xl"
                   style={{ 
                     background: color.hex,
                     boxShadow: color.hex === '#ffffff' ? '0 2px 8px rgba(0,0,0,0.2)' : '0 2px 10px rgba(0,0,0,0.3)'
                   }}
                 />
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-[10px] font-medium rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg">
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-[10px] font-medium rounded whitespace-nowrap opacity-0 group-hover/color:opacity-100 transition-opacity pointer-events-none shadow-lg z-10">
                   {color.name}
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
                 </div>
@@ -596,39 +716,56 @@ const ProductCard = ({
           </div>
         </div>
 
-        <div className="text-center mb-3">
-          <p className="text-4xl font-extrabold text-gray-900 leading-none">
+        <div className="text-center mb-4">
+          <p className="text-5xl font-black text-gray-900 leading-none group-hover:text-green-600 transition-colors">
             {product.price}
             <span className="text-xl ml-1 text-gray-600">{language === 'ar' ? 'درهم' : 'DH'}</span>
           </p>
+          <div className="mt-2 inline-block bg-yellow-100 border-2 border-yellow-400 text-yellow-800 px-3 py-1 rounded-lg text-xs font-black animate-pulse">
+            {language === 'ar' ? '🔥 السعر شامل التوصيل' : '🔥 Livraison incluse'}
+          </div>
         </div>
 
+        {/* Bouton WhatsApp avec animations attractives */}
         <button
           onClick={(e) => {
-            e.stopPropagation(); // Éviter la double navigation
+            e.stopPropagation();
             handleWhatsAppClick();
           }}
-          className={`w-full bg-gradient-to-r from-[#25D366] via-[#20bd5a] to-[#1da851] text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2.5 transition-all duration-300 active:scale-95 relative overflow-hidden group ${language === 'ar' ? 'flex-row-reverse' : ''}`}
-          style={{
-            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
-          }}
+          className={`relative w-full bg-gradient-to-r from-[#25D366] via-[#20bd5a] to-[#1da851] text-white font-black py-4 px-4 rounded-2xl flex items-center justify-center gap-3 transition-all duration-300 active:scale-95 overflow-hidden group/btn shadow-2xl hover:shadow-3xl border-2 border-green-600 ${language === 'ar' ? 'flex-row-reverse' : ''}`}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+          {/* Effet de vague animé */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
           
-          <div className="relative z-10">
-            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+          {/* Effet de pulsation */}
+          <div className="absolute inset-0 bg-white/20 rounded-2xl animate-ping" style={{ animationDuration: '2s' }} />
+          
+          <div className="relative z-10 flex items-center gap-3">
+            <div className="bg-white/20 rounded-full p-2">
+              <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+            </div>
+            
+            <span className="text-lg font-black tracking-wide">
+              {ctaText}
+            </span>
+            
+            <svg className="w-6 h-6 opacity-90 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
           </div>
-          
-          <span className="text-base font-bold relative z-10 tracking-wide">
-            {ctaText}
-          </span>
-          
-          <svg className="w-5 h-5 opacity-80 group-hover:translate-x-1 transition-transform relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-          </svg>
         </button>
+
+        {/* Indicateur de confiance */}
+        <div className="mt-3 flex items-center justify-center gap-2 text-green-600">
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          </svg>
+          <span className="text-xs font-bold">
+            {language === 'ar' ? 'طلبك محمي 100%' : 'Commande 100% sécurisée'}
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -749,6 +886,10 @@ function App() {
     }
   }, [language]);
 
+  const handleLanguageChange = () => {
+    setLanguage(language === 'ar' ? 'fr' : 'ar');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <style>{`
@@ -782,41 +923,29 @@ function App() {
         <img height="1" width="1" style={{ display: 'none' }} src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`} alt="" />
       </noscript>
 
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-lg shadow-sm border-b border-gray-300">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-center relative">
-          <img 
-            src="https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/others/wjGs4dLMgdmpRz5mH5cuoQtNQSI9ii22LWfVkDuA.png"
-            alt="DECOREL"
-            className="h-10 w-auto"
-          />
-          
-          <button
-            onClick={() => setLanguage(language === 'ar' ? 'fr' : 'ar')}
-            className={`absolute ${language === 'ar' ? 'left-4' : 'right-4'} flex items-center gap-2 bg-gray-800 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg transition-all hover:bg-gray-900 active:scale-95`}
-          >
-            {language === 'ar' ? <><span>FR</span> 🇫🇷</> : <><span>AR</span> 🇲🇦</>}
-          </button>
-        </div>
-      </header>
+      <SmartHeader language={language} onLanguageChange={handleLanguageChange} />
 
-      <FeaturesHero language={language} />
+      {/* Padding top pour compenser le header fixe */}
+      <div className="pt-20">
+        <FeaturesHero language={language} />
 
-      <main className="max-w-6xl mx-auto px-4 pb-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {productsData.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              language={language}
-              ctaText={selectedCta}
-              trackingData={trackingData}
-            />
-          ))}
-        </div>
-      </main>
+        <main className="max-w-6xl mx-auto px-4 pb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {productsData.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                language={language}
+                ctaText={selectedCta}
+                trackingData={trackingData}
+              />
+            ))}
+          </div>
+        </main>
 
-      <Footer language={language} />
-      <ScrollToTop />
+        <Footer language={language} />
+        <ScrollToTop />
+      </div>
     </div>
   );
 }
