@@ -71,7 +71,12 @@ const colors = {
 };
 
 // --- NUMÉROS WHATSAPP ---
-const whatsappNumbers = ['212656454375'];
+const whatsappNumbers = [
+  '212658015287',
+  '212658016050',
+  '212693221157',
+  '212658069643'
+];
 
 // --- BADGES PROMOTIONNELS ---
 const promotionalBadges = [
@@ -571,6 +576,9 @@ const ProductCard = ({
   }, [product.id, language]);
 
   const handleWhatsAppClick = () => {
+    // Sélectionner un nouveau numéro WhatsApp aléatoirement à chaque clic
+    const randomWhatsappNumber = whatsappNumbers[Math.floor(Math.random() * whatsappNumbers.length)];
+    
     trackClickToWhatsApp({
       fbclid: trackingData.fbclid,
       sessionId: trackingData.sessionId,
@@ -579,7 +587,7 @@ const ProductCard = ({
       productPrice: product.price,
       currency: 'MAD',
       language: language,
-      whatsappNumber: trackingData.whatsappNumber,
+      whatsappNumber: randomWhatsappNumber,
       userAgent: navigator.userAgent,
       timestamp: Date.now(),
     });
@@ -588,7 +596,7 @@ const ProductCard = ({
       ? `السلام عليكم، أريد معلومات عن ${product.name.ar}`
       : `Bonjour, je veux des informations sur ${product.name.fr}`;
     
-    const url = `https://wa.me/${trackingData.whatsappNumber}?text=${encodeURIComponent(message)}`;
+    const url = `https://wa.me/${randomWhatsappNumber}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
@@ -806,12 +814,13 @@ const PixelInitializer = () => {
 
 function App() {
   const [language, setLanguage] = useState<Language>('ar');
-  const [selectedCta, setSelectedCta] = useState('');
   const [trackingData, setTrackingData] = useState({
     sessionId: '',
     whatsappNumber: '',
     fbclid: ''
   });
+  // Un CTA différent par produit
+  const [productCtas, setProductCtas] = useState<Record<number, string>>({});
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -837,8 +846,13 @@ function App() {
       fbclid: fbclid || storedData.fbclid || ''
     });
 
-    const randomCtaIndex = Math.floor(Math.random() * ctaVariations.ar.length);
-    setSelectedCta(ctaVariations.ar[randomCtaIndex]);
+    // Assigner un CTA différent à chaque produit
+    const ctas: Record<number, string> = {};
+    productsData.forEach((product) => {
+      const randomIndex = Math.floor(Math.random() * ctaVariations.ar.length);
+      ctas[product.id] = ctaVariations.ar[randomIndex];
+    });
+    setProductCtas(ctas);
 
     console.log('🎯 Tracking Initialisé:', {
       sessionId: sessionId.substring(0, 15) + '...',
@@ -849,9 +863,13 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (selectedCta) {
-      const randomIndex = Math.floor(Math.random() * ctaVariations[language].length);
-      setSelectedCta(ctaVariations[language][randomIndex]);
+    if (Object.keys(productCtas).length > 0) {
+      const ctas: Record<number, string> = {};
+      productsData.forEach((product) => {
+        const randomIndex = Math.floor(Math.random() * ctaVariations[language].length);
+        ctas[product.id] = ctaVariations[language][randomIndex];
+      });
+      setProductCtas(ctas);
     }
   }, [language]);
 
@@ -905,7 +923,7 @@ function App() {
                 key={product.id}
                 product={product}
                 language={language}
-                ctaText={selectedCta}
+                ctaText={productCtas[product.id] || ctaVariations[language][0]}
                 trackingData={trackingData}
               />
             ))}
