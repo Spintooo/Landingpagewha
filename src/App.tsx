@@ -719,7 +719,7 @@ const ProductCard = ({
             e.stopPropagation();
             handleWhatsAppClick();
           }}
-          className={`relative w-full bg-gradient-to-r from-[#25D366] via-[#20bd5a] to-[#1da851] text-white font-black py-4 px-4 rounded-2xl flex items-center justify-center gap-3 transition-all duration-300 active:scale-95 overflow-hidden group/btn shadow-2xl hover:shadow-3xl border-2 border-green-600 ${language === 'ar' ? 'flex-row-reverse' : ''}`}
+          className={`whatsapp-button relative w-full bg-gradient-to-r from-[#25D366] via-[#20bd5a] to-[#1da851] text-white font-black py-4 px-4 rounded-2xl flex items-center justify-center gap-3 transition-all duration-300 active:scale-95 overflow-hidden group/btn shadow-2xl hover:shadow-3xl border-2 border-green-600 ${language === 'ar' ? 'flex-row-reverse' : ''}`}
         >
           {/* Effet de vague animé */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
@@ -901,6 +901,32 @@ function App() {
         @keyframes float {
           0%, 100% { transform: translateY(0) rotate(0deg); }
           50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+          20%, 40%, 60%, 80% { transform: translateX(8px); }
+        }
+
+        .animate-shake {
+          animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
+          animation-iteration-count: infinite;
+          animation-delay: 0s;
+          animation-duration: 4s;
+        }
+
+        @keyframes shake-cycle {
+          0% { transform: translateX(0); }
+          12.5% { transform: translateX(-8px); }
+          25% { transform: translateX(8px); }
+          37.5% { transform: translateX(-8px); }
+          50% { transform: translateX(0); }
+          100% { transform: translateX(0); }
+        }
+
+        .whatsapp-button {
+          animation: shake-cycle 4s ease-in-out infinite;
         }
       `}</style>
 
