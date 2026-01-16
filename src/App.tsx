@@ -9,7 +9,6 @@ interface Product {
   price: number;
   images: string[];
   stock: number;
-  // soldCount removed from interface requirement as we don't display it anymore
 }
 
 // --- CONFIGURATION BACKEND ---
@@ -53,7 +52,7 @@ const ctaVariations = {
   ]
 };
 
-// --- BADGE VARIATIONS (NOUVEAU) ---
+// --- BADGE VARIATIONS ---
 const badgeVariations = {
   ar: [
     'عرض جد محدود',
@@ -94,7 +93,7 @@ const colors = {
 // --- NUMÉROS WHATSAPP ---
 const whatsappNumbers = ['212656454375'];
 
-// --- PRODUITS (ORDRE MODIFIÉ: YAKOUT -> FATY -> QUEEN) ---
+// --- PRODUITS (ORDRE: YAKOUT -> FATY -> QUEEN) ---
 const productsData: Product[] = [
   {
     id: 2,
@@ -391,7 +390,7 @@ const ScrollToTop = () => {
   );
 };
 
-// --- FEATURES HERO REFONDU (REFONT À ZERO) ---
+// --- FEATURES HERO (2 COLONNES, SANS QUALITÉ) ---
 const FeaturesHero = ({ language }: { language: Language }) => (
   <div className="max-w-6xl mx-auto px-4 py-8 mb-4">
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
@@ -402,7 +401,9 @@ const FeaturesHero = ({ language }: { language: Language }) => (
         <div className="h-1 w-24 mx-auto bg-green-500 rounded-full"></div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Modification ici: grid-cols-2 et suppression de la carte 'Qualité' */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
         {/* Card 1: Paiement */}
         <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-green-200 transition-colors">
           <div className="w-14 h-14 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4 text-2xl shadow-sm">
@@ -418,22 +419,7 @@ const FeaturesHero = ({ language }: { language: Language }) => (
           </p>
         </div>
 
-        {/* Card 2: Qualité */}
-        <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-blue-200 transition-colors">
-          <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4 text-2xl shadow-sm">
-            💎
-          </div>
-          <h3 className="text-lg font-bold text-gray-800 mb-2">
-            {language === 'ar' ? 'جودة عالية مضمونة' : 'Qualité Premium'}
-          </h3>
-          <p className="text-sm text-gray-600">
-            {language === 'ar' 
-              ? 'تصميمات عصرية و خشب متين يدوم طويلاً' 
-              : 'Designs modernes et matériaux durables de haute qualité'}
-          </p>
-        </div>
-
-        {/* Card 3: Rapidité */}
+        {/* Card 2: Rapidité (Anciennement 3) */}
         <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-yellow-200 transition-colors">
           <div className="w-14 h-14 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mb-4 text-2xl shadow-sm">
             🚀
@@ -473,7 +459,6 @@ const ProductCard = ({
   // Initialisation du badge aléatoire au montage
   useEffect(() => {
     const badges = badgeVariations[language];
-    // On utilise l'ID produit pour avoir un "aléatoire stable" ou juste random pur
     const randomIdx = Math.floor(Math.random() * badges.length);
     setBadgeText(badges[randomIdx]);
   }, [language]);
@@ -581,7 +566,6 @@ const ProductCard = ({
             {product.price}
             <span className="text-xl ml-1 text-gray-600">{language === 'ar' ? 'درهم' : 'DH'}</span>
           </p>
-          {/* SUPPRIMÉ: Texte "Seulement X pièces restantes" sous le prix */}
         </div>
 
         <button
@@ -607,8 +591,6 @@ const ProductCard = ({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
           </svg>
         </button>
-
-        {/* SUPPRIMÉ: Texte "+492 clients ont acheté ce modèle" */}
       </div>
     </div>
   );
@@ -659,20 +641,6 @@ const PixelInitializer = () => {
       TikTok: TIKTOK_PIXEL_ID
     });
     
-    if (process.env.NODE_ENV === 'development') {
-      const handleKeyPress = (e: KeyboardEvent) => {
-        if (e.key === 'p' || e.key === 'P') {
-          const randomProduct = productsData[0]; // Just take first one for test
-          const transactionId = `TEST_${Date.now()}`;
-          trackMetaPurchase(randomProduct.name.fr, randomProduct.price, transactionId);
-          trackTikTokPurchase(randomProduct.name.fr, randomProduct.price, `product_${randomProduct.id}`, transactionId);
-          alert('✅ Purchase Event simulé (Meta + TikTok)');
-        }
-      };
-      window.addEventListener('keypress', handleKeyPress);
-      return () => window.removeEventListener('keypress', handleKeyPress);
-    }
-    
   }, []);
   
   return null;
@@ -681,7 +649,6 @@ const PixelInitializer = () => {
 function App() {
   const [language, setLanguage] = useState<Language>('ar');
   const [selectedCta, setSelectedCta] = useState('');
-  // SUPPRIMÉ: State 'shuffledProducts' pour respecter l'ordre strict
   const [trackingData, setTrackingData] = useState({
     sessionId: '',
     whatsappNumber: '',
@@ -784,7 +751,6 @@ function App() {
 
       <main className="max-w-6xl mx-auto px-4 pb-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Utilisation directe de productsData pour garder l'ordre strict */}
           {productsData.map((product) => (
             <ProductCard
               key={product.id}
@@ -799,26 +765,6 @@ function App() {
 
       <Footer language={language} />
       <ScrollToTop />
-
-      {/* SUPPRIMÉ: Bouton Flottant WhatsApp */}
-
-      {process.env.NODE_ENV === 'development' && (
-        <div className="fixed top-20 right-4 bg-black/90 text-white text-xs p-3 rounded-lg z-50 max-w-xs">
-          <div className="font-bold mb-2 text-green-400">🔍 Tracking Debug</div>
-          <div className="space-y-1">
-            <div>Session: {trackingData.sessionId.substring(0, 10)}...</div>
-            <div>WhatsApp: {trackingData.whatsappNumber}</div>
-            <div>FBCLID: {trackingData.fbclid ? trackingData.fbclid.substring(0, 8) + '...' : 'none'}</div>
-            <div className="mt-2 pt-2 border-t border-gray-700">
-              <div className="text-green-400">✅ Meta Pixel: {META_PIXEL_ID}</div>
-              <div className="text-purple-400">✅ TikTok Pixel: {TIKTOK_PIXEL_ID}</div>
-            </div>
-            <div className="text-[10px] text-gray-400 mt-2">
-              Press 'P' to test Purchase event
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
