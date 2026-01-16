@@ -9,6 +9,8 @@ interface Product {
   price: number;
   images: string[];
   stock: number;
+  soldCount: number;
+  badge: string; // Nouveau champ pour le badge promotionnel
 }
 
 // --- CONFIGURATION BACKEND ---
@@ -52,28 +54,6 @@ const ctaVariations = {
   ]
 };
 
-// --- BADGE VARIATIONS ---
-const badgeVariations = {
-  ar: [
-    'عرض جد محدود',
-    'هذا المنتج الاكثر مبيعا!',
-    'هذا المنتج جد مطلوب!',
-    'موديل جديد !',
-    'موديل عصري وانيق!',
-    'كمية جد محدودة!',
-    'تخفيض 50%'
-  ],
-  fr: [
-    'Offre très limitée',
-    'Best-seller !',
-    'Très demandé !',
-    'Nouveau modèle !',
-    'Modèle moderne !',
-    'Quantité très limitée !',
-    '-50% de réduction'
-  ]
-};
-
 // --- COULEURS ---
 const colors = {
   ar: [
@@ -93,7 +73,18 @@ const colors = {
 // --- NUMÉROS WHATSAPP ---
 const whatsappNumbers = ['212656454375'];
 
-// --- PRODUITS (ORDRE: YAKOUT -> FATY -> QUEEN) ---
+// --- BADGES PROMOTIONNELS ---
+const promotionalBadges = [
+  'عرض جد محدود',
+  'هذا المنتج الاكثر مبيعا!',
+  'هذا المنتج جد مطلوب!',
+  'موديل جديد !',
+  'موديل عصري وانيق!',
+  'كمية جد محدودة!',
+  'تخفيض 50%'
+];
+
+// --- PRODUITS (AYA supprimé, ordre: YAKOUT, FATY, QUEEN) ---
 const productsData: Product[] = [
   {
     id: 2,
@@ -105,7 +96,9 @@ const productsData: Product[] = [
       'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/1n3ZoZ5ISwib9Dt9inRh9DlDuXrUbAKwAYGie7wB_lg.png',
       'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/FxN8UJU6PiV0AfqfIktbHZYvj31lI3tvcvAG7TUA_lg.png'
     ],
-    stock: Math.floor(Math.random() * 4) + 3
+    stock: Math.floor(Math.random() * 4) + 3,
+    soldCount: Math.floor(Math.random() * 501) + 400,
+    badge: promotionalBadges[0]
   },
   {
     id: 4,
@@ -117,7 +110,9 @@ const productsData: Product[] = [
       'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/inpwoZy2vAMKjV59cnOz7GNbpvFx95FUo5CU5Q6U.webp',
       'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/DKXKXJNL5h0oodhh1xvzym3EHFcXjjew2AxUwQFl.webp'
     ],
-    stock: Math.floor(Math.random() * 4) + 3
+    stock: Math.floor(Math.random() * 4) + 3,
+    soldCount: Math.floor(Math.random() * 501) + 400,
+    badge: promotionalBadges[1]
   },
   {
     id: 3,
@@ -129,7 +124,9 @@ const productsData: Product[] = [
       'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/8IBLfvyEO1LwGjziHDRz3rqvaxQZKUlMcUWmw09P_lg.png',
       'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/DWo7H90jQMNFufRfWouRAhvUbM5URh4BtpJayswy_lg.png'
     ],
-    stock: Math.floor(Math.random() * 4) + 3
+    stock: Math.floor(Math.random() * 4) + 3,
+    soldCount: Math.floor(Math.random() * 501) + 400,
+    badge: promotionalBadges[2]
   }
 ];
 
@@ -390,49 +387,112 @@ const ScrollToTop = () => {
   );
 };
 
-// --- FEATURES HERO (2 COLONNES, SANS QUALITÉ) ---
 const FeaturesHero = ({ language }: { language: Language }) => (
-  <div className="max-w-6xl mx-auto px-4 py-8 mb-4">
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">
-          {language === 'ar' ? 'لماذا تختار DECOREL؟' : 'Pourquoi choisir DECOREL ?'}
-        </h2>
-        <div className="h-1 w-24 mx-auto bg-green-500 rounded-full"></div>
-      </div>
+  <div className="relative max-w-5xl mx-auto px-4 py-6">
+    <div className="bg-gradient-to-br from-emerald-50 via-white to-teal-50 rounded-3xl shadow-2xl border-2 border-emerald-200 overflow-hidden">
       
-      {/* Modification ici: grid-cols-2 et suppression de la carte 'Qualité' */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Motif décoratif */}
+      <div className="absolute inset-0 opacity-[0.03]">
+        <div className="absolute top-0 left-0 w-full h-full" style={{
+          backgroundImage: `radial-gradient(circle at 20px 20px, #10b981 1px, transparent 1px)`,
+          backgroundSize: '40px 40px'
+        }} />
+      </div>
+
+      <div className="relative z-10 p-6">
         
-        {/* Card 1: Paiement */}
-        <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-green-200 transition-colors">
-          <div className="w-14 h-14 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4 text-2xl shadow-sm">
-            🤝
+        {/* Titre principal */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-2xl shadow-lg mb-4">
+            <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+            <h2 className="text-2xl font-black tracking-tight">
+              {language === 'ar' ? 'لماذا تختار DECOREL؟' : 'Pourquoi DECOREL ?'}
+            </h2>
           </div>
-          <h3 className="text-lg font-bold text-gray-800 mb-2">
-            {language === 'ar' ? 'الدفع عند الاستلام' : 'Paiement à la livraison'}
-          </h3>
-          <p className="text-sm text-gray-600">
-            {language === 'ar' 
-              ? 'تخلص حتى توصلك الطلبية ديالك و تقلبها مزيان' 
-              : 'Payez uniquement à la réception et vérification du produit'}
-          </p>
         </div>
 
-        {/* Card 2: Rapidité (Anciennement 3) */}
-        <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-yellow-200 transition-colors">
-          <div className="w-14 h-14 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mb-4 text-2xl shadow-sm">
-            🚀
+        {/* Grille des avantages */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+          
+          {/* Avantage 1 */}
+          <div className="group bg-white rounded-2xl p-5 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-2 border-emerald-100 hover:border-emerald-400">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-gray-800 mb-2">
+                {language === 'ar' ? 'الدفع عند الاستلام' : 'Paiement à la livraison'}
+              </h3>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                {language === 'ar' ? 'قلب بعد التأكد من المنتج' : 'Payez après vérification'}
+              </p>
+              <div className="mt-3 inline-block bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full">
+                {language === 'ar' ? '100% مضمون' : '100% Sécurisé'}
+              </div>
+            </div>
           </div>
-          <h3 className="text-lg font-bold text-gray-800 mb-2">
-            {language === 'ar' ? 'توصيل سريع' : 'Livraison Rapide'}
-          </h3>
-          <p className="text-sm text-gray-600">
-            {language === 'ar' 
-              ? 'توصيل لباب الدار في وقت قياسي لجميع المدن' 
-              : 'Livraison à domicile rapide partout au Maroc'}
-          </p>
+
+          {/* Avantage 2 */}
+          <div className="group bg-white rounded-2xl p-5 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-2 border-blue-100 hover:border-blue-400">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-gray-800 mb-2">
+                {language === 'ar' ? 'تركيب سهل وسريع' : 'Installation facile'}
+              </h3>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                {language === 'ar' ? 'تركيب في 5 دقائق فقط' : 'Montage en 5 minutes'}
+              </p>
+              <div className="mt-3 inline-block bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-full">
+                {language === 'ar' ? 'بدون مجهود' : 'Sans effort'}
+              </div>
+            </div>
+          </div>
+
+          {/* Avantage 3 */}
+          <div className="group bg-white rounded-2xl p-5 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-2 border-purple-100 hover:border-purple-400">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-gray-800 mb-2">
+                {language === 'ar' ? 'ألوان متعددة' : 'Plusieurs couleurs'}
+              </h3>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                {language === 'ar' ? 'اختر اللون المناسب لديكورك' : 'Choisissez votre couleur'}
+              </p>
+              <div className="mt-3 inline-block bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1.5 rounded-full">
+                {language === 'ar' ? '4 ألوان متاحة' : '4 couleurs'}
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* Call to action */}
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-4 text-center shadow-lg">
+          <p className="text-white font-bold text-lg mb-2">
+            {language === 'ar' ? '🎁 اختر موديلك المفضل الآن' : '🎁 Choisissez votre modèle maintenant'}
+          </p>
+          <div className="flex justify-center">
+            <svg 
+              className="w-8 h-8 text-white animate-bounce" 
+              fill="currentColor" 
+              viewBox="0 0 20 20"
+            >
+              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v10.586l3.293-3.293a1 1 0 111.414 1.414l-5 5a1 1 0 01-1.414 0l-5-5a1 1 0 111.414-1.414L9 14.586V4a1 1 0 011-1z" clipRule="evenodd" />
+            </svg>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -454,14 +514,6 @@ const ProductCard = ({
   };
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [badgeText, setBadgeText] = useState('');
-
-  // Initialisation du badge aléatoire au montage
-  useEffect(() => {
-    const badges = badgeVariations[language];
-    const randomIdx = Math.floor(Math.random() * badges.length);
-    setBadgeText(badges[randomIdx]);
-  }, [language]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -527,9 +579,9 @@ const ProductCard = ({
           ))}
         </div>
 
-        {/* NOUVEAU BADGE AVEC TEXTE VARIABLE */}
+        {/* Badge promotionnel dynamique */}
         <div className="absolute top-3 right-3 bg-gradient-to-r from-red-600 to-red-700 text-white px-3 py-1.5 rounded-lg font-bold text-xs shadow-lg animate-pulse border border-red-800">
-          ⚡ {badgeText}
+          ⚡ {product.badge}
         </div>
       </div>
 
@@ -561,7 +613,7 @@ const ProductCard = ({
           </div>
         </div>
 
-        <div className="text-center mb-6">
+        <div className="text-center mb-3">
           <p className="text-4xl font-extrabold text-gray-900 leading-none">
             {product.price}
             <span className="text-xl ml-1 text-gray-600">{language === 'ar' ? 'درهم' : 'DH'}</span>
@@ -640,6 +692,20 @@ const PixelInitializer = () => {
       Meta: META_PIXEL_ID,
       TikTok: TIKTOK_PIXEL_ID
     });
+    
+    if (process.env.NODE_ENV === 'development') {
+      const handleKeyPress = (e: KeyboardEvent) => {
+        if (e.key === 'p' || e.key === 'P') {
+          const randomProduct = productsData[Math.floor(Math.random() * productsData.length)];
+          const transactionId = `TEST_${Date.now()}`;
+          trackMetaPurchase(randomProduct.name.fr, randomProduct.price, transactionId);
+          trackTikTokPurchase(randomProduct.name.fr, randomProduct.price, `product_${randomProduct.id}`, transactionId);
+          alert('✅ Purchase Event simulé (Meta + TikTok)');
+        }
+      };
+      window.addEventListener('keypress', handleKeyPress);
+      return () => window.removeEventListener('keypress', handleKeyPress);
+    }
     
   }, []);
   
@@ -765,6 +831,24 @@ function App() {
 
       <Footer language={language} />
       <ScrollToTop />
+
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed top-20 right-4 bg-black/90 text-white text-xs p-3 rounded-lg z-50 max-w-xs">
+          <div className="font-bold mb-2 text-green-400">🔍 Tracking Debug</div>
+          <div className="space-y-1">
+            <div>Session: {trackingData.sessionId.substring(0, 10)}...</div>
+            <div>WhatsApp: {trackingData.whatsappNumber}</div>
+            <div>FBCLID: {trackingData.fbclid ? trackingData.fbclid.substring(0, 8) + '...' : 'none'}</div>
+            <div className="mt-2 pt-2 border-t border-gray-700">
+              <div className="text-green-400">✅ Meta Pixel: {META_PIXEL_ID}</div>
+              <div className="text-purple-400">✅ TikTok Pixel: {TIKTOK_PIXEL_ID}</div>
+            </div>
+            <div className="text-[10px] text-gray-400 mt-2">
+              Press 'P' to test Purchase event
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
