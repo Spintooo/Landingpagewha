@@ -1,964 +1,565 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 // --- TYPES ---
 type Language = 'ar' | 'fr';
-
 interface Product {
   id: number;
   name: { ar: string; fr: string };
   price: number;
+  originalPrice: number;
   images: string[];
   stock: number;
   soldCount: number;
-  badge: string; // Nouveau champ pour le badge promotionnel
+  badge: { ar: string; fr: string };
+  colorId: string;
 }
 
-// --- CONFIGURATION BACKEND ---
+// --- CONFIG ---
 const BACKEND_ENDPOINT = 'https://script.google.com/macros/s/YOUR_GOOGLE_APPS_SCRIPT_ID/exec';
+const META_PIXEL_ID    = '2015120555934116';
+const TIKTOK_PIXEL_ID  = 'D5JCC63C77U894MDA0BG';
 
-// --- PIXEL CONFIGURATION ---
-const META_PIXEL_ID = '2015120555934116';
-const TIKTOK_PIXEL_ID = 'D5JCC63C77U894MDA0BG';
+declare global { interface Window { fbq: any; ttq: any; } }
 
-// --- DECLARE GLOBAL ---
-declare global {
-  interface Window {
-    fbq: any;
-    ttq: any;
-  }
-}
+const whatsappNumbers = ['212658015287','212658016050','212693221157','212658069643'];
 
-// --- CTA VARIATIONS ---
-const ctaVariations = {
-  ar: [
-    'تواصل معايا دابا فالواتساب',
-    'الواتساب',
-    'إشتري الان عبر الواتساب',
-    'الواتساب لكي ارسل لك الالوان المتوفرة',
-    'اطلب الان',
-    'نعم اريد الشراء',
-    'اضغط هنا للشراء',
-    'تواصل معايا دابا فالواتساب',
-    'إشتري الان'
-  ],
-  fr: [
-    'Commander maintenant',
-    'Acheter maintenant',
-    'Cliquer ici pour passer la commande',
-    'Discutter sur whatsapp maintenant',
-    'Confirmer sur whatsapp',
-    'Je suis intéressé',
-    'Oui je veux ce produit',
-    'Je veux ce produit',
-    'Cliquer ici pour information sur whatsapp'
-  ]
-};
-
-// --- COULEURS ---
 const colors = {
   ar: [
-    { name: 'الخشبي', hex: '#b1a791' },
-    { name: 'البني', hex: '#8B7355' },
-    { name: 'الابيض', hex: '#ffffff' },
-    { name: 'الاسود', hex: '#000000' }
+    { name: 'الخشبي',  hex: '#c8b89a' },
+    { name: 'البني',   hex: '#8B7355' },
+    { name: 'الأبيض',  hex: '#f5f0eb' },
+    { name: 'الأسود',  hex: '#1a1a1a' },
   ],
   fr: [
-    { name: 'Beige', hex: '#b1a791' },
-    { name: 'Marron', hex: '#8B7355' },
-    { name: 'Blanc', hex: '#ffffff' },
-    { name: 'Noir', hex: '#000000' }
-  ]
+    { name: 'Beige',   hex: '#c8b89a' },
+    { name: 'Marron',  hex: '#8B7355' },
+    { name: 'Blanc',   hex: '#f5f0eb' },
+    { name: 'Noir',    hex: '#1a1a1a' },
+  ],
 };
 
-// --- NUMÉROS WHATSAPP ---
-const whatsappNumbers = [
-  '212658015287',
-  '212658016050',
-  '212693221157',
-  '212658069643'
-];
-
-// --- BADGES PROMOTIONNELS ---
-const promotionalBadges = [
-  'عرض جد محدود',
-  'هذا المنتج الاكثر مبيعا!',
-  'هذا المنتج جد مطلوب!',
-  'موديل جديد !',
-  'موديل عصري وانيق!',
-  'كمية جد محدودة!',
-  'تخفيض 50%'
-];
-
-// --- PRODUITS (AYA supprimé, ordre: YAKOUT, FATY, QUEEN) ---
 const productsData: Product[] = [
   {
     id: 2,
     name: { ar: 'كوافوز YAKOUT', fr: 'COIFFEUSE YAKOUT' },
-    price: 749,
+    price: 749, originalPrice: 1199,
     images: [
       'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/vTmczULSFXsWKM1LbCk1iAdMDMzxVLzWOW7aoz78_lg.png',
       'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/VAPqSklbdtWjPeZ1GrHlDTi2yxnZSpd9NxPtJiy3_lg.png',
       'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/1n3ZoZ5ISwib9Dt9inRh9DlDuXrUbAKwAYGie7wB_lg.png',
-      'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/FxN8UJU6PiV0AfqfIktbHZYvj31lI3tvcvAG7TUA_lg.png'
+      'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/FxN8UJU6PiV0AfqfIktbHZYvj31lI3tvcvAG7TUA_lg.png',
     ],
-    stock: Math.floor(Math.random() * 4) + 3,
-    soldCount: Math.floor(Math.random() * 501) + 400,
-    badge: promotionalBadges[0]
+    stock: 4, soldCount: 847,
+    badge: { ar: 'الأكثر مبيعاً ⭐', fr: 'Best-seller ⭐' },
+    colorId: 'yakout',
   },
   {
     id: 4,
-    name: { ar: 'كــوافوز FATY', fr: 'COIFFEUSE FATY' },
-    price: 679,
+    name: { ar: 'كوافوز FATY', fr: 'COIFFEUSE FATY' },
+    price: 679, originalPrice: 999,
     images: [
       'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/lM1HZc2e1DLMcZ0f7rhJUo53icPobvLiId2U0I1b.webp',
       'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/JyUWIz9QtG50wH47wq8q6AcKBUQKVnWMt44niECP.webp',
       'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/inpwoZy2vAMKjV59cnOz7GNbpvFx95FUo5CU5Q6U.webp',
-      'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/DKXKXJNL5h0oodhh1xvzym3EHFcXjjew2AxUwQFl.webp'
+      'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/DKXKXJNL5h0oodhh1xvzym3EHFcXjjew2AxUwQFl.webp',
     ],
-    stock: Math.floor(Math.random() * 4) + 3,
-    soldCount: Math.floor(Math.random() * 501) + 400,
-    badge: promotionalBadges[1]
+    stock: 3, soldCount: 612,
+    badge: { ar: 'طلب محدود 🔥', fr: 'Stock limité 🔥' },
+    colorId: 'faty',
   },
   {
     id: 3,
     name: { ar: 'كوافوز QUEEN', fr: 'COIFFEUSE QUEEN' },
-    price: 649,
+    price: 649, originalPrice: 949,
     images: [
       'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/IknqY41xp51Tyirk3Vy8V07mo9jXXEXnHvSnSJ3i_lg.png',
       'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/z80nFUx58TBZJ1AKXwWuO38wUioYXmYpm1tTSp1E_lg.png',
       'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/8IBLfvyEO1LwGjziHDRz3rqvaxQZKUlMcUWmw09P_lg.png',
-      'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/DWo7H90jQMNFufRfWouRAhvUbM5URh4BtpJayswy_lg.png'
+      'https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/products/DWo7H90jQMNFufRfWouRAhvUbM5URh4BtpJayswy_lg.png',
     ],
-    stock: Math.floor(Math.random() * 4) + 3,
-    soldCount: Math.floor(Math.random() * 501) + 400,
-    badge: promotionalBadges[2]
-  }
+    stock: 5, soldCount: 534,
+    badge: { ar: 'موديل جديد ✨', fr: 'Nouveau modèle ✨' },
+    colorId: 'queen',
+  },
 ];
 
-// --- UTILS: GÉNÉRATION ET STOCKAGE ---
-const generateSessionId = () => {
-  return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+// ─── TRACKING ────────────────────────────────────────────────────────────────
+const getCookie = (name: string) => {
+  const m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return m ? m[2] : '';
 };
-
-const storeTrackingData = (fbclid: string | null, sessionId: string, whatsappNumber: string) => {
-  localStorage.setItem('session_id', sessionId);
-  localStorage.setItem('selected_whatsapp_number', whatsappNumber);
-  
-  if (fbclid) {
-    localStorage.setItem('fbclid', fbclid);
-  }
-  
-  const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString();
-  document.cookie = `session_id=${sessionId}; expires=${expires}; path=/`;
-  document.cookie = `selected_whatsapp_number=${whatsappNumber}; expires=${expires}; path=/`;
-  
-  if (fbclid) {
-    document.cookie = `fbclid=${fbclid}; expires=${expires}; path=/`;
-  }
-};
-
-const getStoredTrackingData = () => {
-  const sessionId = localStorage.getItem('session_id') || '';
-  const whatsappNumber = localStorage.getItem('selected_whatsapp_number') || whatsappNumbers[0];
+const getTrackingPayload = () => {
   const fbclid = localStorage.getItem('fbclid') || '';
-  
-  return { sessionId, whatsappNumber, fbclid };
+  const fbp    = getCookie('_fbp') || '';
+  const fbc    = getCookie('_fbc') || (fbclid ? `fb.1.${Date.now()}.${fbclid}` : '');
+  return { fbclid, fbp, fbc, userAgent: navigator.userAgent, clientIp: localStorage.getItem('clientIp') || '' };
+};
+const trackMetaEvent = (name: string, params: object = {}) => {
+  try { if (window.fbq) window.fbq('track', name, params); } catch {}
+};
+const trackTTEvent = (name: string, params: object = {}) => {
+  try { if (window.ttq) window.ttq.track(name, params); } catch {}
 };
 
-// ═══════════════════════════════════════════════════════════
-// 📊 META PIXEL FUNCTIONS
-// ═══════════════════════════════════════════════════════════
-
-const initMetaPixel = () => {
-  if (!META_PIXEL_ID || META_PIXEL_ID === 'YOUR_META_PIXEL_ID') {
-    console.warn('⚠️ Meta Pixel ID non configuré');
-    return;
-  }
-
-  const script = document.createElement('script');
-  script.innerHTML = `
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '${META_PIXEL_ID}');
-    fbq('track', 'PageView');
-  `;
-  document.head.appendChild(script);
-};
-
-const trackMetaEvent = (eventName: string, parameters = {}) => {
-  try {
-    if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('track', eventName, parameters);
-      console.log(`✅ Meta Event: ${eventName}`, parameters);
-    } else {
-      console.log(`⚠️ Meta Event (non envoyé): ${eventName}`, parameters);
-    }
-  } catch (error) {
-    console.error('❌ Erreur Meta tracking:', error);
-  }
-};
-
-const trackMetaPageView = () => {
-  trackMetaEvent('PageView', {
-    content_name: 'DECOREL Landing Page',
-    content_category: 'Furniture',
-    currency: 'MAD',
-    value: 0
-  });
-};
-
-const trackMetaViewContent = (productName: string, productPrice: number) => {
-  trackMetaEvent('ViewContent', {
-    content_name: productName,
-    content_type: 'product',
-    currency: 'MAD',
-    value: productPrice
-  });
-};
-
-const trackMetaContact = (productName: string, productPrice: number) => {
-  trackMetaEvent('Contact', {
-    content_name: productName,
-    content_type: 'product',
-    currency: 'MAD',
-    value: productPrice,
-    contact_method: 'whatsapp'
-  });
-};
-
-const trackMetaPurchase = (productName: string, productPrice: number, transactionId: string) => {
-  trackMetaEvent('Purchase', {
-    content_name: productName,
-    content_type: 'product',
-    currency: 'MAD',
-    value: productPrice,
-    transaction_id: transactionId,
-    num_items: 1
-  });
-};
-
-// ═══════════════════════════════════════════════════════════
-// 🎵 TIKTOK PIXEL FUNCTIONS
-// ═══════════════════════════════════════════════════════════
-
-const trackTikTokEvent = (eventName: string, properties = {}) => {
-  try {
-    if (typeof window !== 'undefined' && window.ttq) {
-      window.ttq.track(eventName, properties);
-      console.log(`✅ TikTok Event: ${eventName}`, properties);
-    } else {
-      console.log(`⚠️ TikTok Event (non envoyé): ${eventName}`, properties);
-    }
-  } catch (error) {
-    console.error('❌ Erreur TikTok tracking:', error);
-  }
-};
-
-const trackTikTokPageView = () => {
-  trackTikTokEvent('Browse', {
-    content_type: 'product_group',
-    content_name: 'DECOREL Landing Page'
-  });
-};
-
-const trackTikTokViewContent = (productName: string, productPrice: number, productId: string) => {
-  trackTikTokEvent('ViewContent', {
-    content_type: 'product',
-    content_id: productId,
-    content_name: productName,
-    value: productPrice,
-    currency: 'MAD',
-    quantity: 1
-  });
-};
-
-const trackTikTokContact = (productName: string, productPrice: number, productId: string) => {
-  trackTikTokEvent('Contact', {
-    content_type: 'product',
-    content_id: productId,
-    content_name: productName,
-    value: productPrice,
-    currency: 'MAD',
-    quantity: 1,
-    description: 'WhatsApp Contact'
-  });
-};
-
-const trackTikTokPurchase = (productName: string, productPrice: number, productId: string, transactionId: string) => {
-  trackTikTokEvent('CompletePayment', {
-    content_type: 'product',
-    content_id: productId,
-    content_name: productName,
-    value: productPrice,
-    currency: 'MAD',
-    quantity: 1,
-    order_id: transactionId
-  });
-};
-
-// ═══════════════════════════════════════════════════════════
-// 📡 TRACKING SERVICE UNIFIÉ
-// ═══════════════════════════════════════════════════════════
-
-const trackClickToWhatsApp = async (data: {
-  fbclid: string;
-  sessionId: string;
-  productName: string;
-  productId: string;
-  productPrice: number;
-  currency: string;
-  language: string;
-  whatsappNumber: string;
-  userAgent: string;
-  timestamp: number;
-}) => {
-  try {
-    // 1. Tracking Meta - Contact Event
-    trackMetaContact(data.productName, data.productPrice);
-
-    // 2. Tracking TikTok - Contact Event ✅
-    trackTikTokContact(data.productName, data.productPrice, data.productId);
-
-    // 3. Backend tracking
-    const payload = {
-      event_type: 'whatsapp_click',
-      ...data,
-    };
-
-    fetch(BACKEND_ENDPOINT, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    }).catch(error => {
-      console.log('📤 Tracking envoyé (no-cors mode)');
-    });
-
-    console.log('✅ WhatsApp Click Tracked (Meta + TikTok):', {
-      sessionId: data.sessionId.substring(0, 10) + '...',
-      productName: data.productName,
-      productPrice: data.productPrice,
-      currency: data.currency,
-      whatsappNumber: data.whatsappNumber
-    });
-
-  } catch (error) {
-    console.error('❌ Erreur tracking:', error);
-  }
-};
-
-// ═══════════════════════════════════════════════════════════
-// 🎨 COMPOSANTS UI
-// ═══════════════════════════════════════════════════════════
-
-const ScrollToTop = () => {
-  const [isVisible, setIsVisible] = useState(false);
-
+// ─── PIXEL INIT ──────────────────────────────────────────────────────────────
+const PixelInit = () => {
   useEffect(() => {
-    const toggleVisibility = () => {
-      setIsVisible(window.pageYOffset > 300);
-    };
+    // Meta Pixel
+    const s = document.createElement('script');
+    s.innerHTML = `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${META_PIXEL_ID}');fbq('track','PageView');`;
+    document.head.appendChild(s);
+    // Capture fbclid
+    const fbclid = new URLSearchParams(window.location.search).get('fbclid');
+    if (fbclid) localStorage.setItem('fbclid', fbclid);
+    // Capture IP
+    fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>localStorage.setItem('clientIp',d.ip)).catch(()=>{});
+  }, []);
+  return null;
+};
 
-    window.addEventListener('scroll', toggleVisibility);
-    return () => window.removeEventListener('scroll', toggleVisibility);
+// ─── SOCIAL PROOF TOAST ──────────────────────────────────────────────────────
+const cities = ['الدار البيضاء','الرباط','مراكش','أكادير','فاس','طنجة','مكناس','وجدة'];
+const names  = ['سارة','مريم','فاطمة','خديجة','أمينة','نور','إيمان','حنان','رجاء','سلمى'];
+const SocialProofToast = () => {
+  const [toast, setToast] = useState<{name:string;city:string;product:string;ago:number}|null>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const show = () => {
+      const p = productsData[Math.floor(Math.random()*productsData.length)];
+      setToast({
+        name: names[Math.floor(Math.random()*names.length)],
+        city: cities[Math.floor(Math.random()*cities.length)],
+        product: p.name.ar,
+        ago: Math.floor(Math.random()*45)+2,
+      });
+      setVisible(true);
+      setTimeout(()=>setVisible(false), 4000);
+    };
+    const t1 = setTimeout(show, 3000);
+    const interval = setInterval(show, 18000);
+    return () => { clearTimeout(t1); clearInterval(interval); };
+  }, []);
+  return (
+    <div className={`fixed bottom-20 left-3 z-50 transition-all duration-500 ${visible?'opacity-100 translate-y-0':'opacity-0 translate-y-4 pointer-events-none'}`}>
+      <div className="bg-white rounded-2xl shadow-2xl p-3 flex items-center gap-3 max-w-[280px] border border-green-100">
+        <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white text-lg flex-shrink-0">✓</div>
+        <div dir="rtl">
+          <p className="text-xs font-black text-gray-900">{toast?.name} من {toast?.city}</p>
+          <p className="text-[10px] text-gray-500">طلبت {toast?.product} منذ {toast?.ago} دقيقة</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── COUNTDOWN TIMER ─────────────────────────────────────────────────────────
+const CountdownBanner = ({ language }: { language: Language }) => {
+  const [time, setTime] = useState({ h: 2, m: 47, s: 33 });
+  useEffect(() => {
+    const t = setInterval(() => {
+      setTime(prev => {
+        let { h, m, s } = prev;
+        s--; if(s<0){s=59;m--;} if(m<0){m=59;h--;} if(h<0){h=2;m=47;s=33;}
+        return { h, m, s };
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, []);
+  const pad = (n: number) => String(n).padStart(2,'0');
+  return (
+    <div className="bg-gradient-to-r from-red-600 via-red-500 to-orange-500 text-white py-2 px-4 text-center text-xs font-black">
+      <span>{language==='ar'?'⚡ العرض ينتهي خلال':'⚡ Offre expire dans'} </span>
+      <span className="bg-black/30 rounded px-1 mx-0.5 tabular-nums">{pad(time.h)}</span>:
+      <span className="bg-black/30 rounded px-1 mx-0.5 tabular-nums">{pad(time.m)}</span>:
+      <span className="bg-black/30 rounded px-1 mx-0.5 tabular-nums">{pad(time.s)}</span>
+    </div>
+  );
+};
+
+// ─── STICKY CTA BAR ──────────────────────────────────────────────────────────
+const StickyBar = ({ language, onCta }: { language: Language; onCta: ()=>void }) => {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setShow(window.scrollY > 400);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  return (
+    <div className={`fixed bottom-0 left-0 right-0 z-50 transition-all duration-300 ${show?'translate-y-0':'translate-y-full'}`}>
+      <div className="bg-white border-t-2 border-green-400 px-4 py-3 flex items-center gap-3 shadow-2xl">
+        <div className="flex-1" dir={language==='ar'?'rtl':'ltr'}>
+          <p className="text-xs text-gray-500 font-bold">{language==='ar'?'التوصيل مجاني 🚚':'Livraison gratuite 🚚'}</p>
+          <p className="text-sm font-black text-gray-900">{language==='ar'?'ادفع عند الاستلام':'Paiement à la réception'}</p>
+        </div>
+        <button
+          onClick={onCta}
+          className="bg-green-500 active:bg-green-600 text-white font-black px-5 py-3 rounded-xl text-sm shadow-lg flex items-center gap-2 shrink-0"
+        >
+          <span>{language==='ar'?'اطلب الآن':'Commander'}</span>
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ─── STOCK BAR ───────────────────────────────────────────────────────────────
+const StockBar = ({ stock, language }: { stock: number; language: Language }) => {
+  const pct = Math.min((stock / 10) * 100, 100);
+  return (
+    <div className="mb-3">
+      <div className="flex items-center justify-between text-[11px] font-black mb-1">
+        <span className="text-red-500 animate-pulse">
+          {language==='ar'?`⚠️ باقي ${stock} قطع فقط!`:`⚠️ Plus que ${stock} pièces!`}
+        </span>
+        <span className="text-gray-400">{language==='ar'?'الكمية':'Stock'}</span>
+      </div>
+      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-gradient-to-r from-red-500 to-orange-400 rounded-full transition-all"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+};
+
+// ─── PRODUCT CARD ────────────────────────────────────────────────────────────
+const ProductCard = ({
+  product, language, selectedColor, onColorSelect, onWhatsApp,
+}: {
+  product: Product;
+  language: Language;
+  selectedColor: string | null;
+  onColorSelect: (name: string) => void;
+  onWhatsApp: () => void;
+}) => {
+  const [imgIdx, setImgIdx] = useState(0);
+  const discount = Math.round((1 - product.price / product.originalPrice) * 100);
+  const colorList = colors[language];
+  const isRtl = language === 'ar';
+
+  // ViewContent after 2s
+  useEffect(() => {
+    const t = setTimeout(() => {
+      trackMetaEvent('ViewContent', { content_name: product.name[language], value: product.price, currency: 'MAD', content_ids: [`product_${product.id}`], content_type: 'product' });
+      trackTTEvent('ViewContent', { content_type: 'product', content_id: `product_${product.id}`, content_name: product.name[language], value: product.price, currency: 'MAD' });
+    }, 2000);
+    return () => clearTimeout(t);
   }, []);
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   return (
-    <>
-      {isVisible && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-6 right-6 z-50 bg-white/90 backdrop-blur-md text-gray-800 p-3 rounded-full border-2 border-gray-800 shadow-2xl hover:bg-gray-800 hover:text-white transition-all duration-300 hover:-translate-y-1 active:scale-95"
-          style={{ animation: 'bounce 2s infinite' }}
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-          </svg>
-        </button>
-      )}
-    </>
-  );
-};
-
-const SmartHeader = ({ language, onLanguageChange }: { language: Language; onLanguageChange: () => void }) => {
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.pageYOffset;
-      const pageHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const scrollPercentage = (currentScrollY / pageHeight) * 100;
-
-      // Afficher le header seulement si on est à moins de 5% du top de la page
-      if (scrollPercentage < 5) {
-        setIsVisible(true);
-      } 
-      // Masquer le header en scrollant vers le bas
-      else if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        setIsVisible(false);
-      }
-
-      setLastScrollY(currentScrollY);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [lastScrollY]);
-
-  return (
-    <header 
-      className={`fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg shadow-lg border-b border-gray-300 transition-transform duration-300 ${
-        isVisible ? 'translate-y-0' : '-translate-y-full'
-      }`}
-    >
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-center relative">
-        <img 
-          src="https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/others/wjGs4dLMgdmpRz5mH5cuoQtNQSI9ii22LWfVkDuA.png"
-          alt="DECOREL"
-          className="h-10 w-auto"
-        />
-        
-        <button
-          onClick={onLanguageChange}
-          className={`absolute ${language === 'ar' ? 'left-4' : 'right-4'} flex items-center gap-2 bg-gray-800 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg transition-all hover:bg-gray-900 active:scale-95`}
-        >
-          {language === 'ar' ? <><span>FR</span> 🇫🇷</> : <><span>AR</span> 🇲🇦</>}
-        </button>
-      </div>
-    </header>
-  );
-};
-
-const FeaturesHero = ({ language }: { language: Language }) => (
-  <div className="relative max-w-6xl mx-auto px-3 py-6">
-    {/* Nouvelle section informative - Design ultra-moderne et compact */}
-    <div className="max-w-3xl mx-auto mb-6">
-      <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-4 shadow-2xl border border-gray-700">
-        <div className="grid grid-cols-2 gap-3">
-          {/* Bloc 1 - Livraison */}
-          <div className="flex items-center gap-3 bg-gradient-to-br from-emerald-600/20 to-teal-600/20 rounded-xl p-3 border border-emerald-600/30">
-            <div className="bg-emerald-500 rounded-full p-2 flex-shrink-0">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-white font-black text-xs md:text-sm leading-tight">
-                {language === 'ar' ? 'التوصيل مجاني' : 'Livraison gratuite'}
-              </p>
-              <p className="text-emerald-300 text-[10px] md:text-xs font-bold leading-tight">
-                {language === 'ar' ? 'قلب الطلبية عاد خلص' : 'Paiement à la réception'}
-              </p>
-            </div>
-          </div>
-
-          {/* Bloc 2 - Qualité */}
-          <div className="flex items-center gap-3 bg-gradient-to-br from-blue-600/20 to-cyan-600/20 rounded-xl p-3 border border-blue-600/30">
-            <div className="bg-blue-500 rounded-full p-2 flex-shrink-0">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-white font-black text-xs md:text-sm leading-tight">
-                {language === 'ar' ? 'الجودة عالية' : 'Qualité Premium'}
-              </p>
-              <p className="text-blue-300 text-[10px] md:text-xs font-bold leading-tight">
-                {language === 'ar' ? 'خشب 18MDF' : 'Bois MDF 18mm'}
-              </p>
-            </div>
-          </div>
+    <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 flex flex-col" dir={isRtl?'rtl':'ltr'}>
+      {/* Badge */}
+      <div className="relative">
+        <div className="absolute top-3 right-3 z-10 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-lg shadow">
+          {product.badge[language]}
         </div>
-      </div>
-    </div>
-
-    {/* Call to action - Design radical court et percutant */}
-    <div className="relative group max-w-2xl mx-auto">
-      <div className="relative bg-gradient-to-r from-red-600 via-orange-600 to-yellow-500 rounded-2xl shadow-2xl overflow-hidden transform hover:scale-105 transition-all duration-300">
-        
-        {/* Effet brillant animé */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-        
-        <div className="relative px-6 py-4 flex items-center justify-between gap-4">
-          {/* Côté gauche - Emoji et texte */}
-          <div className="flex items-center gap-3">
-            <span className="text-5xl animate-bounce drop-shadow-lg">🎁</span>
-            <div>
-              <h3 className="text-white font-black text-lg md:text-xl leading-tight mb-1">
-                {language === 'ar' ? 'اختر موديلك المفضل' : 'Choisissez votre modèle'}
-              </h3>
-              <p className="text-yellow-100 font-bold text-xs md:text-sm">
-                {language === 'ar' ? 'عرض محدود جداً!' : 'Offre très limitée!'}
-              </p>
-            </div>
-          </div>
-
-          {/* Côté droit - Flèche animée */}
-          <div className="hidden md:block">
-            <svg 
-              className="w-12 h-12 text-white drop-shadow-lg animate-bounce" 
-              fill="currentColor" 
-              viewBox="0 0 20 20"
-            >
-              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v10.586l3.293-3.293a1 1 0 111.414 1.414l-5 5a1 1 0 01-1.414 0l-5-5a1 1 0 111.414-1.414L9 14.586V4a1 1 0 011-1z" clipRule="evenodd" />
-            </svg>
-          </div>
-
-          {/* Flèche mobile */}
-          <div className="md:hidden">
-            <svg 
-              className="w-8 h-8 text-white drop-shadow-lg animate-bounce" 
-              fill="currentColor" 
-              viewBox="0 0 20 20"
-            >
-              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v10.586l3.293-3.293a1 1 0 111.414 1.414l-5 5a1 1 0 01-1.414 0l-5-5a1 1 0 111.414-1.414L9 14.586V4a1 1 0 011-1z" clipRule="evenodd" />
-            </svg>
-          </div>
+        <div className="absolute top-3 left-3 z-10 bg-black text-white text-[10px] font-black px-2 py-1 rounded-lg">
+          -{discount}%
         </div>
 
-        {/* Bordure brillante animée */}
-        <div className="absolute inset-0 border-2 border-white/20 rounded-2xl" />
-      </div>
-    </div>
-  </div>
-);
-
-const ProductCard = ({ 
-  product, 
-  language, 
-  ctaText, 
-  trackingData 
-}: { 
-  product: Product; 
-  language: Language; 
-  ctaText: string;
-  trackingData: {
-    sessionId: string;
-    whatsappNumber: string;
-    fbclid: string;
-  };
-}) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [autoPlay, setAutoPlay] = useState(true);
-
-  useEffect(() => {
-    if (!autoPlay) return;
-    
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
-    }, 2500);
-    return () => clearInterval(interval);
-  }, [product.images.length, autoPlay]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      trackMetaViewContent(product.name[language], product.price);
-      trackTikTokViewContent(product.name[language], product.price, `product_${product.id}`);
-    }, 2000);
-    
-    return () => clearTimeout(timer);
-  }, [product.id, language]);
-
-  const handleWhatsAppClick = () => {
-    // Sélectionner un nouveau numéro WhatsApp aléatoirement à chaque clic
-    const randomWhatsappNumber = whatsappNumbers[Math.floor(Math.random() * whatsappNumbers.length)];
-    
-    trackClickToWhatsApp({
-      fbclid: trackingData.fbclid,
-      sessionId: trackingData.sessionId,
-      productName: product.name[language],
-      productId: `product_${product.id}`,
-      productPrice: product.price,
-      currency: 'MAD',
-      language: language,
-      whatsappNumber: randomWhatsappNumber,
-      userAgent: navigator.userAgent,
-      timestamp: Date.now(),
-    });
-
-    const message = language === 'ar'
-      ? `السلام عليكم، أريد معلومات عن ${product.name.ar}`
-      : `Bonjour, je veux des informations sur ${product.name.fr}`;
-    
-    const url = `https://wa.me/${randomWhatsappNumber}?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
-  };
-
-  const handlePrevImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setAutoPlay(false);
-    setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
-  };
-
-  const handleNextImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setAutoPlay(false);
-    setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
-  };
-
-  return (
-    <div 
-      onClick={handleWhatsAppClick}
-      className="relative bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-[1.02] border-2 border-gray-200 hover:border-green-400 cursor-pointer group"
-    >
-      <div className="relative w-full h-[340px] bg-gray-100 overflow-hidden">
-        {product.images.map((img, idx) => (
-          <img
-            key={idx}
-            src={img}
-            alt={product.name[language]}
-            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${
-              idx === currentImageIndex ? 'opacity-100' : 'opacity-0'
-            }`}
-            loading={idx === 0 ? 'eager' : 'lazy'}
-          />
-        ))}
-
-        {/* Boutons de navigation des images */}
-        <button
-          onClick={handlePrevImage}
-          className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95"
-          aria-label="Image précédente"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-
-        <button
-          onClick={handleNextImage}
-          className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95"
-          aria-label="Image suivante"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-        
-        {/* Indicateurs d'images - maintenant cliquables */}
-        <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2 z-20">
-          {product.images.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={(e) => {
-                e.stopPropagation();
-                setAutoPlay(false);
-                setCurrentImageIndex(idx);
-              }}
-              className={`h-2 rounded-full transition-all duration-300 hover:scale-125 ${
-                idx === currentImageIndex ? 'w-8 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'
-              }`}
-              aria-label={`Image ${idx + 1}`}
+        {/* Image 1:1 */}
+        <div className="relative w-full" style={{ paddingBottom: '100%' }}>
+          {product.images.map((img, i) => (
+            <img
+              key={i}
+              src={img}
+              alt={product.name[language]}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${i===imgIdx?'opacity-100':'opacity-0'}`}
+              loading={i===0?'eager':'lazy'}
             />
           ))}
         </div>
 
-        {/* Badge promotionnel dynamique */}
-        <div className="absolute top-3 right-3 bg-gradient-to-r from-red-600 to-red-700 text-white px-3 py-2 rounded-xl font-black text-xs shadow-2xl animate-pulse border-2 border-red-800">
-          <div className="flex items-center gap-1">
-            <span className="text-yellow-300">⚡</span>
-            <span>{product.badge}</span>
-          </div>
+        {/* Dot nav */}
+        <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-10">
+          {product.images.map((_,i) => (
+            <button
+              key={i}
+              onClick={()=>setImgIdx(i)}
+              className={`rounded-full transition-all ${i===imgIdx?'w-5 h-2 bg-white':'w-2 h-2 bg-white/60'}`}
+            />
+          ))}
         </div>
       </div>
 
-      <div className="relative p-4">
-        <h3 className="text-xl font-bold text-gray-900 mb-3 text-center group-hover:text-green-600 transition-colors">
-          {product.name[language]}
-        </h3>
+      {/* Info */}
+      <div className="p-4 flex flex-col flex-1">
+        <h3 className="font-black text-gray-900 text-base mb-1 text-center">{product.name[language]}</h3>
 
+        {/* Sold count */}
+        <div className="flex items-center justify-center gap-1 text-[11px] text-gray-500 mb-3">
+          <span className="text-yellow-500">★★★★★</span>
+          <span className="font-bold">{product.soldCount.toLocaleString()} {language==='ar'?'طلب':'commandes'}</span>
+        </div>
+
+        {/* Price */}
+        <div className="flex items-center justify-center gap-2 mb-3">
+          <span className="text-3xl font-black text-gray-900">{product.price} <span className="text-lg">{language==='ar'?'درهم':'DH'}</span></span>
+          <span className="text-sm text-gray-400 line-through">{product.originalPrice}</span>
+        </div>
+
+        {/* Stock bar */}
+        <StockBar stock={product.stock} language={language} />
+
+        {/* Color picker */}
         <div className="mb-4">
-          <p className="text-xs font-semibold text-gray-600 mb-2 text-center">
-            {language === 'ar' ? 'الالوان المتوفرة' : 'Couleurs disponibles'}
+          <p className="text-xs font-bold text-gray-500 mb-2 text-center">
+            {language==='ar'?'اختر اللون:':'Choisissez la couleur:'}
+            {selectedColor && <span className="text-green-600 mr-1"> {selectedColor}</span>}
           </p>
-          <div className="flex justify-center gap-3">
-            {colors[language].map((color, idx) => (
-              <div key={idx} className="group/color relative">
-                <div 
-                  className="w-8 h-8 rounded-full border-2 border-gray-300 shadow-md hover:scale-125 transition-transform cursor-pointer hover:border-green-500 hover:shadow-xl"
-                  style={{ 
-                    background: color.hex,
-                    boxShadow: color.hex === '#ffffff' ? '0 2px 8px rgba(0,0,0,0.2)' : '0 2px 10px rgba(0,0,0,0.3)'
-                  }}
-                />
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-[10px] font-medium rounded whitespace-nowrap opacity-0 group-hover/color:opacity-100 transition-opacity pointer-events-none shadow-lg z-10">
-                  {color.name}
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
-                </div>
-              </div>
+          <div className="flex justify-center gap-2">
+            {colorList.map((c) => (
+              <button
+                key={c.name}
+                onClick={()=>onColorSelect(c.name)}
+                className={`w-9 h-9 rounded-full border-2 transition-all ${selectedColor===c.name?'border-green-500 scale-110 shadow-lg':'border-gray-200 hover:border-gray-400'}`}
+                style={{ background: c.hex, boxShadow: c.hex==='#f5f0eb'?'inset 0 0 0 1px #ddd':undefined }}
+                title={c.name}
+              />
             ))}
           </div>
         </div>
 
-        <div className="text-center mb-4">
-          <p className="text-5xl font-black text-gray-900 leading-none group-hover:text-green-600 transition-colors">
-            {product.price}
-            <span className="text-xl ml-1 text-gray-600">{language === 'ar' ? 'درهم' : 'DH'}</span>
-          </p>
-        </div>
-
-        {/* Bouton WhatsApp avec animations attractives */}
+        {/* CTA */}
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleWhatsAppClick();
-          }}
-          className={`whatsapp-button relative w-full bg-gradient-to-r from-[#25D366] via-[#20bd5a] to-[#1da851] text-white font-black py-4 px-4 rounded-2xl flex items-center justify-center gap-3 transition-all duration-300 active:scale-95 overflow-hidden group/btn shadow-2xl hover:shadow-3xl border-2 border-green-600 ${language === 'ar' ? 'flex-row-reverse' : ''}`}
+          onClick={onWhatsApp}
+          className={`mt-auto w-full bg-green-500 hover:bg-green-600 active:bg-green-700 active:scale-95 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg transition-all text-sm ${!selectedColor?'opacity-80':''}`}
+          style={{ animation: 'shakeCta 4s ease-in-out infinite' }}
         >
-          {/* Effet de vague animé */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
-          
-          {/* Effet de pulsation */}
-          <div className="absolute inset-0 bg-white/20 rounded-2xl animate-ping" style={{ animationDuration: '2s' }} />
-          
-          <div className="relative z-10 flex items-center gap-3">
-            <div className="bg-white/20 rounded-full p-2">
-              <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-              </svg>
-            </div>
-            
-            <span className="text-lg font-black tracking-wide">
-              {ctaText}
-            </span>
-            
-            <svg className="w-6 h-6 opacity-90 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
-          </div>
+          <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          <span>{language==='ar'?'اطلب الآن عبر واتساب':'Commander sur WhatsApp'}</span>
         </button>
+
+        {!selectedColor && (
+          <p className="text-center text-[10px] text-red-400 font-bold mt-1">
+            {language==='ar'?'← اختر اللون أولاً':'← Choisissez d\'abord la couleur'}
+          </p>
+        )}
       </div>
     </div>
   );
 };
 
-const Footer = ({ language }: { language: Language }) => (
-  <footer className="mt-10 bg-gray-50 border-t border-gray-300">
-    <div className="max-w-6xl mx-auto px-4 py-8 text-center" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-      <div className="mb-4">
-        <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-gray-300 shadow-sm">
-          <span className="text-green-600 text-lg">📍</span>
-          <span className="font-semibold text-gray-800 text-sm">
-            {language === 'ar' ? 'أكادير، المغرب' : 'Agadir, Maroc'}
-          </span>
-        </div>
-      </div>
-
-      <div className="flex justify-center gap-4 mb-5 flex-wrap text-xs">
-        <a href="https://decorel.shop/pages/confidentiality" className="text-gray-600 hover:text-gray-900 transition-colors font-medium">
-          {language === 'ar' ? 'الخصوصية' : 'Confidentialité'}
-        </a>
-        <span className="text-gray-400">•</span>
-        <a href="https://decorel.shop/pages/shipping-delivery" className="text-gray-600 hover:text-gray-900 transition-colors font-medium">
-          {language === 'ar' ? 'التوصيل والإسترجاع' : 'Livraison & Retour'}
-        </a>
-      </div>
-
-      <div className="border-t border-gray-300 pt-4">
-        <p className="text-gray-500 text-xs mb-1">
-          © 2026 DECOREL - {language === 'ar' ? 'جميع الحقوق محفوظة' : 'Tous droits réservés'}
-        </p>
-        <p className="text-gray-400 text-[10px]">
-          {language === 'ar' ? 'صناعة مغربية 100%' : 'Fabrication 100% Marocaine'}
-        </p>
+// ─── TRUST BADGES ────────────────────────────────────────────────────────────
+const TrustBadges = ({ language }: { language: Language }) => {
+  const badges = language === 'ar'
+    ? [
+        { icon: '🚚', title: 'التوصيل مجاني', sub: 'الدفع عند الاستلام' },
+        { icon: '⭐', title: 'جودة عالية', sub: 'خشب MDF 18mm' },
+        { icon: '🛡️', title: 'ضمان الجودة', sub: '100٪ مضمون' },
+        { icon: '⚡', title: 'توصيل سريع', sub: '2-4 أيام' },
+      ]
+    : [
+        { icon: '🚚', title: 'Livraison gratuite', sub: 'Paiement à réception' },
+        { icon: '⭐', title: 'Qualité premium', sub: 'Bois MDF 18mm' },
+        { icon: '🛡️', title: 'Qualité garantie', sub: '100% garanti' },
+        { icon: '⚡', title: 'Livraison rapide', sub: '2-4 jours' },
+      ];
+  return (
+    <div className="bg-gray-900 py-4 px-3">
+      <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-3">
+        {badges.map((b,i) => (
+          <div key={i} className="flex items-center gap-2" dir={language==='ar'?'rtl':'ltr'}>
+            <span className="text-2xl">{b.icon}</span>
+            <div>
+              <p className="text-white text-xs font-black leading-tight">{b.title}</p>
+              <p className="text-gray-400 text-[10px]">{b.sub}</p>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
-  </footer>
-);
-
-const PixelInitializer = () => {
-  useEffect(() => {
-    initMetaPixel();
-    trackMetaPageView();
-    trackTikTokPageView();
-    
-    console.log('✅ Pixels initialisés:', {
-      Meta: META_PIXEL_ID,
-      TikTok: TIKTOK_PIXEL_ID
-    });
-    
-    if (process.env.NODE_ENV === 'development') {
-      const handleKeyPress = (e: KeyboardEvent) => {
-        if (e.key === 'p' || e.key === 'P') {
-          const randomProduct = productsData[Math.floor(Math.random() * productsData.length)];
-          const transactionId = `TEST_${Date.now()}`;
-          trackMetaPurchase(randomProduct.name.fr, randomProduct.price, transactionId);
-          trackTikTokPurchase(randomProduct.name.fr, randomProduct.price, `product_${randomProduct.id}`, transactionId);
-          alert('✅ Purchase Event simulé (Meta + TikTok)');
-        }
-      };
-      window.addEventListener('keypress', handleKeyPress);
-      return () => window.removeEventListener('keypress', handleKeyPress);
-    }
-    
-  }, []);
-  
-  return null;
+  );
 };
 
+// ─── APP ─────────────────────────────────────────────────────────────────────
 function App() {
-  const [language, setLanguage] = useState<Language>('ar');
-  const [trackingData, setTrackingData] = useState({
-    sessionId: '',
-    whatsappNumber: '',
-    fbclid: ''
-  });
-  // Un CTA différent par produit
-  const [productCtas, setProductCtas] = useState<Record<number, string>>({});
+  const [language, setLanguage]             = useState<Language>('ar');
+  const [selectedColors, setSelectedColors] = useState<Record<number, string>>({});
+  const [firstProductRef]                   = useState(() => React.createRef<HTMLDivElement>());
+  const isRtl = language === 'ar';
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const fbclid = urlParams.get('fbclid');
+  const handleWhatsApp = useCallback((product: Product) => {
+    const color   = selectedColors[product.id] || '';
+    const tracking = getTrackingPayload();
+    const refId   = (Date.now().toString(36).slice(-3) + Math.random().toString(36).slice(2,5)).toUpperCase();
+    const orderId = `ORDER_${Date.now()}`;
+    const num     = whatsappNumbers[Math.floor(Math.random() * whatsappNumbers.length)];
 
-    const storedData = getStoredTrackingData();
-    let sessionId = storedData.sessionId;
-    let whatsappNumber = storedData.whatsappNumber;
-    
-    if (!sessionId) {
-      sessionId = generateSessionId();
-    }
-    
-    if (!whatsappNumber) {
-      whatsappNumber = whatsappNumbers[Math.floor(Math.random() * whatsappNumbers.length)];
-    }
-
-    storeTrackingData(fbclid, sessionId, whatsappNumber);
-
-    setTrackingData({
-      sessionId,
-      whatsappNumber,
-      fbclid: fbclid || storedData.fbclid || ''
+    // InitiateCheckout browser pixel
+    trackMetaEvent('InitiateCheckout', {
+      content_name: product.name[language],
+      content_ids:  [`product_${product.id}`],
+      content_type: 'product',
+      currency:     'MAD',
+      value:        product.price,
+      event_id:     orderId,
+    });
+    trackTTEvent('InitiateCheckout', {
+      content_type: 'product',
+      content_id:   `product_${product.id}`,
+      content_name: product.name[language],
+      value:        product.price,
+      currency:     'MAD',
     });
 
-    // Assigner un CTA différent à chaque produit
-    const ctas: Record<number, string> = {};
-    productsData.forEach((product) => {
-      const randomIndex = Math.floor(Math.random() * ctaVariations.ar.length);
-      ctas[product.id] = ctaVariations.ar[randomIndex];
-    });
-    setProductCtas(ctas);
+    // Backend log
+    fetch(BACKEND_ENDPOINT, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'log_click', refId, orderId,
+        productName: product.name[language],
+        price: product.price, color,
+        ...tracking,
+        currentUrl: window.location.href,
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
 
-    console.log('🎯 Tracking Initialisé:', {
-      sessionId: sessionId.substring(0, 15) + '...',
-      whatsappNumber: whatsappNumber,
-      fbclid: fbclid ? fbclid.substring(0, 8) + '...' : 'none'
-    });
+    // WhatsApp message
+    const msg = language === 'ar'
+      ? `السلام عليكم 👋\nأنا مهتم بـ: *${product.name.ar}*\nاللون: *${color || 'لم يُحدد'}*\nالسعر: *${product.price} درهم*\n\n🔖 كود الطلب: #${refId}`
+      : `Bonjour 👋\nJe suis intéressé par: *${product.name.fr}*\nCouleur: *${color || 'Non choisi'}*\nPrix: *${product.price} DH*\n\n🔖 Réf: #${refId}`;
 
-  }, []);
+    window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
+  }, [selectedColors, language]);
 
-  useEffect(() => {
-    if (Object.keys(productCtas).length > 0) {
-      const ctas: Record<number, string> = {};
-      productsData.forEach((product) => {
-        const randomIndex = Math.floor(Math.random() * ctaVariations[language].length);
-        ctas[product.id] = ctaVariations[language][randomIndex];
-      });
-      setProductCtas(ctas);
-    }
-  }, [language]);
-
-  const handleLanguageChange = () => {
-    setLanguage(language === 'ar' ? 'fr' : 'ar');
+  const scrollToProducts = () => {
+    firstProductRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+    <div className="min-h-screen bg-gray-50" dir={isRtl?'rtl':'ltr'}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
-        
-        body {
-          font-family: ${language === 'ar' ? "'Cairo', sans-serif" : "system-ui, sans-serif"};
-          -webkit-font-smoothing: antialiased;
-          -moz-osx-font-smoothing: grayscale;
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;700;800&display=swap');
+        * { box-sizing: border-box; }
+        body { font-family: ${isRtl?"'Cairo','Tajawal',sans-serif":"system-ui,sans-serif"}; }
+        @keyframes shakeCta {
+          0%,45%,55%,100% { transform: translateX(0); }
+          47% { transform: translateX(-6px); }
+          49% { transform: translateX(6px); }
+          51% { transform: translateX(-4px); }
+          53% { transform: translateX(4px); }
         }
-        
-        @keyframes bounceDown {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(8px); }
+        @keyframes pulse-ring {
+          0%   { transform: scale(1); opacity: 1; }
+          100% { transform: scale(1.6); opacity: 0; }
         }
-        
-        @keyframes bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
-        
-        @keyframes float {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(5deg); }
-        }
-
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
-          20%, 40%, 60%, 80% { transform: translateX(8px); }
-        }
-
-        .animate-shake {
-          animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
-          animation-iteration-count: infinite;
-          animation-delay: 0s;
-          animation-duration: 4s;
-        }
-
-        @keyframes shake-cycle {
-          0% { transform: translateX(0); }
-          12.5% { transform: translateX(-8px); }
-          25% { transform: translateX(8px); }
-          37.5% { transform: translateX(-8px); }
-          50% { transform: translateX(0); }
-          100% { transform: translateX(0); }
-        }
-
-        .whatsapp-button {
-          animation: shake-cycle 4s ease-in-out infinite;
+        .pulse-ring::before {
+          content:'';
+          position:absolute;
+          inset:0;
+          border-radius:9999px;
+          background:rgba(34,197,94,0.4);
+          animation: pulse-ring 1.5s ease-out infinite;
         }
       `}</style>
 
-      <PixelInitializer />
-      
-      <noscript>
-        <img height="1" width="1" style={{ display: 'none' }} src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`} alt="" />
-      </noscript>
+      <PixelInit />
+      <noscript><img height="1" width="1" style={{display:'none'}} src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`} alt="" /></noscript>
 
-      <SmartHeader language={language} onLanguageChange={handleLanguageChange} />
+      {/* Countdown */}
+      <CountdownBanner language={language} />
 
-      {/* Padding top pour compenser le header fixe */}
-      <div className="pt-20">
-        <FeaturesHero language={language} />
+      {/* Header */}
+      <header className="bg-white shadow-sm sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <img
+            src="https://cdn.youcan.shop/stores/0653e0a5dc7a4a7235b672c216370bff/others/wjGs4dLMgdmpRz5mH5cuoQtNQSI9ii22LWfVkDuA.png"
+            alt="DECOREL" className="h-9 w-auto"
+          />
+          <button
+            onClick={()=>setLanguage(l=>l==='ar'?'fr':'ar')}
+            className="text-xs font-black bg-gray-900 text-white px-3 py-2 rounded-xl flex items-center gap-1"
+          >
+            {language==='ar'?<>FR 🇫🇷</>:<>AR 🇲🇦</>}
+          </button>
+        </div>
+      </header>
 
-        <main className="max-w-6xl mx-auto px-4 pb-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {productsData.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                language={language}
-                ctaText={productCtas[product.id] || ctaVariations[language][0]}
-                trackingData={trackingData}
-              />
-            ))}
-          </div>
-        </main>
+      {/* Hero */}
+      <section className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8 px-4 text-center">
+        <p className="text-yellow-400 text-xs font-black uppercase tracking-widest mb-2">
+          {language==='ar'?'🔥 عرض حصري محدود':'🔥 Offre exclusive limitée'}
+        </p>
+        <h1 className="text-white font-black text-2xl md:text-4xl leading-tight mb-3">
+          {language==='ar'
+            ? <>كوافوزات فاخرة بخشب MDF<br/><span className="text-yellow-400">التوصيل مجاني + الدفع عند الاستلام</span></>
+            : <>Coiffeuses premium MDF<br/><span className="text-yellow-400">Livraison gratuite + Paiement réception</span></>
+          }
+        </h1>
+        <div className="flex justify-center gap-4 text-xs text-gray-300 mb-6">
+          <span>✅ {language==='ar'?'+1200 طلب':'1200+ commandes'}</span>
+          <span>✅ {language==='ar'?'تسليم 2-4 أيام':'Livraison 2-4j'}</span>
+          <span>✅ {language==='ar'?'جودة مضمونة':'Qualité garantie'}</span>
+        </div>
+        <button
+          onClick={scrollToProducts}
+          className="relative inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-white font-black px-8 py-4 rounded-2xl shadow-2xl text-base transition-all active:scale-95 pulse-ring"
+        >
+          <span>{language==='ar'?'اختر موديلك الآن ⬇':'Choisir mon modèle ⬇'}</span>
+        </button>
+      </section>
 
-        <Footer language={language} />
-        <ScrollToTop />
-      </div>
+      {/* Trust */}
+      <TrustBadges language={language} />
+
+      {/* Products grid */}
+      <main className="max-w-6xl mx-auto px-3 py-6 pb-24" ref={firstProductRef}>
+        <h2 className="text-center font-black text-gray-900 text-lg mb-1">
+          {language==='ar'?'🛋️ اختر موديلك المفضل':'🛋️ Choisissez votre modèle'}
+        </h2>
+        <p className="text-center text-xs text-gray-500 mb-5">
+          {language==='ar'?'الأسعار شاملة التوصيل — الدفع عند استلام الطلب':'Prix livraison incluse — Paiement à la réception'}
+        </p>
+
+        {/* Mobile: 1 col / Desktop: 4 col (but we have 3 products — so md:grid-cols-3 for 3 items) */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {productsData.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              language={language}
+              selectedColor={selectedColors[product.id] ?? null}
+              onColorSelect={(name) => setSelectedColors(prev => ({ ...prev, [product.id]: name }))}
+              onWhatsApp={() => handleWhatsApp(product)}
+            />
+          ))}
+        </div>
+
+        {/* Bottom CTA */}
+        <div className="mt-8 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-5 text-center shadow-xl">
+          <p className="text-white font-black text-base mb-1">
+            {language==='ar'?'🚚 توصيل مجاني لجميع المدن المغربية':'🚚 Livraison gratuite partout au Maroc'}
+          </p>
+          <p className="text-green-100 text-xs">
+            {language==='ar'?'الدفع عند الاستلام — بدون بطاقة بنكية — بدون تسجيل':'Paiement à la livraison — Sans carte — Sans inscription'}
+          </p>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-gray-400 text-center py-6 text-xs pb-20">
+        <p className="font-bold text-white mb-1">DECOREL</p>
+        <p>{language==='ar'?'أكادير، المغرب — صناعة مغربية 100٪':'Agadir, Maroc — Fabrication 100% marocaine'}</p>
+        <div className="flex justify-center gap-4 mt-3">
+          <a href="https://decorel.shop/pages/confidentiality" className="hover:text-white transition-colors">
+            {language==='ar'?'الخصوصية':'Confidentialité'}
+          </a>
+          <span>·</span>
+          <a href="https://decorel.shop/pages/shipping-delivery" className="hover:text-white transition-colors">
+            {language==='ar'?'التوصيل':'Livraison'}
+          </a>
+        </div>
+        <p className="mt-2">© 2026 DECOREL</p>
+      </footer>
+
+      {/* Overlays */}
+      <SocialProofToast />
+      <StickyBar language={language} onCta={scrollToProducts} />
     </div>
   );
 }
